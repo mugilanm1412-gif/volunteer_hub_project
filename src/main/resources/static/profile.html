@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content" style="max-width: 800px;">
+    <div class="page-header">
+      <div>
+        <h1>Account & Profile</h1>
+        <p>Manage your account settings, personal details, and security</p>
+      </div>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- Main Profile Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <h3 id="profile-card-title">Profile Information</h3>
+        <span id="role-badge" class="badge"></span>
+      </div>
+
+      <div class="card-body">
+        <form id="profile-form">
+          <div id="volunteer-profile-section" style="display: none;">
+            <div class="form-group">
+              <label class="form-label required" for="v-fullName">Full Name</label>
+              <input type="text" id="v-fullName" class="form-control" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="v-phone">Phone Number</label>
+                <input type="tel" id="v-phone" class="form-control">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="v-city">City</label>
+                <input type="text" id="v-city" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="v-skills">Skills & Expertise</label>
+              <input type="text" id="v-skills" class="form-control" placeholder="Comma-separated skills">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="v-interests">Interests / Preferred Causes</label>
+              <input type="text" id="v-interests" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="v-bio">Bio</label>
+              <textarea id="v-bio" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" id="v-showOnLeaderboard">
+              <label for="v-showOnLeaderboard" style="font-size: 0.9rem; color: var(--neutral-700); cursor: pointer;">
+                Show profile on the public volunteer leaderboard
+              </label>
+            </div>
+          </div>
+
+          <div id="ngo-profile-section" style="display: none;">
+            <div id="ngo-verification-banner" style="margin-bottom: 1.25rem;"></div>
+
+            <div class="form-group">
+              <label class="form-label required" for="n-name">Organization Name</label>
+              <input type="text" id="n-name" class="form-control" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label required" for="n-cause">Cause / Category</label>
+                <input type="text" id="n-cause" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="n-regNo">Registration Number</label>
+                <input type="text" id="n-regNo" class="form-control" disabled style="background-color: var(--neutral-100);">
+                <span class="form-text">Registration numbers are verified by administrators.</span>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label required" for="n-contactPerson">Contact Person</label>
+                <input type="text" id="n-contactPerson" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label required" for="n-contactPhone">Contact Phone</label>
+                <input type="tel" id="n-contactPhone" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required" for="n-address">Physical Address</label>
+              <input type="text" id="n-address" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="n-desc">Description</label>
+              <textarea id="n-desc" class="form-control" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div id="admin-profile-section" style="display: none;">
+            <p style="color: var(--neutral-600);">
+              You are logged in as the System Administrator. Administrator accounts have access to the Admin Dashboard for user management and organization verification.
+            </p>
+          </div>
+
+          <button type="submit" id="save-profile-btn" class="btn btn-primary" style="margin-top: 1rem;">
+            Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Security & Password Change Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Change Password</h3>
+      </div>
+      <div class="card-body">
+        <div id="password-alert-container"></div>
+        <form id="change-password-form">
+          <div class="form-group">
+            <label class="form-label required" for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" class="form-control" required autocomplete="current-password">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label required" for="newPassword">New Password</label>
+              <input type="password" id="newPassword" class="form-control" placeholder="Min 8 characters" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="confirmPassword">Confirm New Password</label>
+              <input type="password" id="confirmPassword" class="form-control" required autocomplete="new-password">
+            </div>
+          </div>
+
+          <button type="submit" id="change-pwd-btn" class="btn btn-secondary">
+            Update Password
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-size: 0.85rem;">Volunteer Hub &bull; Final Year Evaluation Ready</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      let user = null;
+      try {
+        user = await apiFetch('/api/users/me');
+      } catch (err) {
+        window.location.href = '/login.html?expired=true';
+        return;
+      }
+
+      const roleBadge = document.getElementById('role-badge');
+      roleBadge.textContent = user.role;
+      roleBadge.className = `badge ${user.role === 'ADMIN' ? 'badge-danger' : (user.role === 'NGO' ? 'badge-info' : 'badge-success')}`;
+
+      const vSection = document.getElementById('volunteer-profile-section');
+      const nSection = document.getElementById('ngo-profile-section');
+      const aSection = document.getElementById('admin-profile-section');
+      const saveBtn = document.getElementById('save-profile-btn');
+
+      if (user.role === 'VOLUNTEER') {
+        vSection.style.display = 'block';
+        try {
+          const profile = await apiFetch('/api/volunteers/me/profile');
+          document.getElementById('v-fullName').value = profile.fullName || '';
+          document.getElementById('v-phone').value = profile.phone || '';
+          document.getElementById('v-city').value = profile.city || '';
+          document.getElementById('v-skills').value = profile.skills || '';
+          document.getElementById('v-interests').value = profile.interests || '';
+          document.getElementById('v-bio').value = profile.bio || '';
+          document.getElementById('v-showOnLeaderboard').checked = profile.showOnLeaderboard;
+        } catch (err) {
+          showToast('Failed to load volunteer profile', 'danger');
+        }
+      } else if (user.role === 'NGO') {
+        nSection.style.display = 'block';
+        try {
+          const profile = await apiFetch('/api/ngos/me/profile');
+          document.getElementById('n-name').value = profile.name || '';
+          document.getElementById('n-cause').value = profile.cause || '';
+          document.getElementById('n-regNo').value = profile.registrationNumber || '';
+          document.getElementById('n-contactPerson').value = profile.contactPerson || '';
+          document.getElementById('n-contactPhone').value = profile.contactPhone || '';
+          document.getElementById('n-address').value = profile.address || '';
+          document.getElementById('n-desc').value = profile.description || '';
+
+          const banner = document.getElementById('ngo-verification-banner');
+          if (profile.verificationStatus === 'VERIFIED') {
+            banner.innerHTML = `<div class="alert alert-success">✓ Organization Verified: You are authorized to publish and conduct volunteering drives.</div>`;
+          } else if (profile.verificationStatus === 'PENDING') {
+            banner.innerHTML = `<div class="alert alert-warning">⏳ Account Verification Pending: An administrator must verify your account before you can publish events.</div>`;
+          } else {
+            banner.innerHTML = `<div class="alert alert-danger">✕ Verification Rejected: ${escapeHtml(profile.rejectionReason || 'Please review your details.')}</div>`;
+          }
+        } catch (err) {
+          showToast('Failed to load NGO profile', 'danger');
+        }
+      } else {
+        aSection.style.display = 'block';
+        saveBtn.style.display = 'none';
+      }
+
+      // Save Profile Handler
+      const profileForm = document.getElementById('profile-form');
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+        try {
+          if (user.role === 'VOLUNTEER') {
+            await apiFetch('/api/volunteers/me/profile', {
+              method: 'PUT',
+              body: {
+                fullName: document.getElementById('v-fullName').value.trim(),
+                phone: document.getElementById('v-phone').value.trim(),
+                city: document.getElementById('v-city').value.trim(),
+                skills: document.getElementById('v-skills').value.trim(),
+                interests: document.getElementById('v-interests').value.trim(),
+                bio: document.getElementById('v-bio').value.trim(),
+                showOnLeaderboard: document.getElementById('v-showOnLeaderboard').checked
+              }
+            });
+          } else if (user.role === 'NGO') {
+            await apiFetch('/api/ngos/me/profile', {
+              method: 'PUT',
+              body: {
+                name: document.getElementById('n-name').value.trim(),
+                cause: document.getElementById('n-cause').value.trim(),
+                contactPerson: document.getElementById('n-contactPerson').value.trim(),
+                contactPhone: document.getElementById('n-contactPhone').value.trim(),
+                address: document.getElementById('n-address').value.trim(),
+                description: document.getElementById('n-desc').value.trim()
+              }
+            });
+          }
+          showToast('Profile updated successfully!', 'success');
+        } catch (err) {
+          showToast(err.message || 'Error updating profile', 'danger');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = 'Save Changes';
+        }
+      });
+
+      // Change Password Handler
+      const pwdForm = document.getElementById('change-password-form');
+      const pwdBtn = document.getElementById('change-pwd-btn');
+      const pwdAlert = document.getElementById('password-alert-container');
+
+      pwdForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        pwdAlert.innerHTML = '';
+
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword.length < 8) {
+          pwdAlert.innerHTML = '<div class="alert alert-danger">New password must be at least 8 characters long.</div>';
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          pwdAlert.innerHTML = '<div class="alert alert-danger">New passwords do not match.</div>';
+          return;
+        }
+
+        pwdBtn.disabled = true;
+        pwdBtn.innerHTML = '<span class="spinner"></span> Updating...';
+
+        try {
+          await apiFetch('/api/users/me/password', {
+            method: 'POST',
+            body: { currentPassword, newPassword }
+          });
+          showToast('Password updated successfully!', 'success');
+          pwdForm.reset();
+        } catch (err) {
+          pwdAlert.innerHTML = `<div class="alert alert-danger">${escapeHtml(err.message || 'Failed to update password')}</div>`;
+        } finally {
+          pwdBtn.disabled = false;
+          pwdBtn.innerHTML = 'Update Password';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content" style="max-width: 640px; margin: 2rem auto;">
+    <div class="card" style="box-shadow: var(--shadow-lg);">
+      <div class="card-header" style="text-align: center; display: block; padding: 2rem 2rem 1rem 2rem;">
+        <h2 style="font-size: 1.75rem;">Create Your Account</h2>
+        <p style="color: var(--neutral-500); margin-top: 0.25rem;">Select your role to get started</p>
+      </div>
+
+      <div class="card-body" style="padding: 1.5rem 2rem 2rem 2rem;">
+        <div id="alert-container"></div>
+
+        <!-- Role Selector Toggle -->
+        <div class="role-selector">
+          <label class="role-card active" id="role-card-volunteer">
+            <input type="radio" name="selected-role" value="VOLUNTEER" checked>
+            <div style="font-size: 1.5rem; margin-bottom: 0.35rem;">🤝</div>
+            <div style="font-weight: 700; color: var(--neutral-900);">Volunteer</div>
+            <div style="font-size: 0.8rem; color: var(--neutral-500);">Join events & track verified hours</div>
+          </label>
+
+          <label class="role-card" id="role-card-ngo">
+            <input type="radio" name="selected-role" value="NGO">
+            <div style="font-size: 1.5rem; margin-bottom: 0.35rem;">🏢</div>
+            <div style="font-weight: 700; color: var(--neutral-900);">NGO / Organization</div>
+            <div style="font-size: 0.8rem; color: var(--neutral-500);">Host events & manage attendance</div>
+          </label>
+        </div>
+
+        <form id="register-form" novalidate>
+          <!-- Common Credentials -->
+          <div class="form-group">
+            <label class="form-label required" for="email">Email Address</label>
+            <input type="email" id="email" class="form-control" placeholder="name@example.com" required>
+            <span id="error-email" class="form-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="password">Password</label>
+            <input type="password" id="password" class="form-control" placeholder="Minimum 8 characters" required>
+            <span id="error-password" class="form-error"></span>
+          </div>
+
+          <!-- Volunteer Specific Fields -->
+          <div id="volunteer-fields">
+            <div class="form-group">
+              <label class="form-label required" for="fullName">Full Name</label>
+              <input type="text" id="fullName" class="form-control" placeholder="Jane Doe">
+              <span id="error-fullName" class="form-error"></span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="phone">Phone Number</label>
+                <input type="tel" id="phone" class="form-control" placeholder="+1-555-0100">
+                <span id="error-phone" class="form-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="city">City</label>
+                <input type="text" id="city" class="form-control" placeholder="Eco City">
+                <span id="error-city" class="form-error"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="skills">Skills & Expertise</label>
+              <input type="text" id="skills" class="form-control" placeholder="e.g. Tree planting, First aid, Teaching">
+              <span id="error-skills" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="interests">Causes of Interest</label>
+              <input type="text" id="interests" class="form-control" placeholder="e.g. Environment, Animal welfare, Education">
+              <span id="error-interests" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="bio">Bio</label>
+              <textarea id="bio" class="form-control" rows="2" placeholder="Tell us briefly about yourself..."></textarea>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" id="showOnLeaderboard" checked>
+              <label for="showOnLeaderboard" style="font-size: 0.9rem; color: var(--neutral-700); cursor: pointer;">
+                Show my profile and score on the public volunteer leaderboard
+              </label>
+            </div>
+          </div>
+
+          <!-- NGO Specific Fields -->
+          <div id="ngo-fields" style="display: none;">
+            <div class="form-group">
+              <label class="form-label required" for="ngoName">Organization Name</label>
+              <input type="text" id="ngoName" class="form-control" placeholder="e.g. Green Earth Foundation">
+              <span id="error-name" class="form-error"></span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label required" for="cause">Primary Cause / Category</label>
+                <select id="cause" class="form-select">
+                  <option value="Environment">Environment & Nature</option>
+                  <option value="Education">Education & Youth</option>
+                  <option value="Community Aid">Community Relief & Food</option>
+                  <option value="Animal Welfare">Animal Welfare</option>
+                  <option value="Healthcare">Healthcare & Well-being</option>
+                  <option value="Arts & Culture">Arts & Culture</option>
+                </select>
+                <span id="error-cause" class="form-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label required" for="registrationNumber">Registration Number</label>
+                <input type="text" id="registrationNumber" class="form-control" placeholder="e.g. NGO-REG-2026-001">
+                <span id="error-registrationNumber" class="form-error"></span>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label required" for="contactPerson">Contact Person</label>
+                <input type="text" id="contactPerson" class="form-control" placeholder="Official Representative">
+                <span id="error-contactPerson" class="form-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label required" for="contactPhone">Contact Phone</label>
+                <input type="tel" id="contactPhone" class="form-control" placeholder="+1-555-0101">
+                <span id="error-contactPhone" class="form-error"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required" for="address">Physical Headquarters Address</label>
+              <input type="text" id="address" class="form-control" placeholder="Street, City, Postal Code">
+              <span id="error-address" class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ngoDescription">Mission & Description</label>
+              <textarea id="ngoDescription" class="form-control" rows="3" placeholder="Brief mission statement..."></textarea>
+            </div>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.5rem;">
+            <span>Complete Registration</span>
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--neutral-600);">
+          Already registered? <a href="/login.html" style="font-weight: 600;">Log in</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-size: 0.85rem;">Volunteer Hub &bull; Final Year Evaluation Ready</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const volunteerCard = document.getElementById('role-card-volunteer');
+      const ngoCard = document.getElementById('role-card-ngo');
+      const volunteerFields = document.getElementById('volunteer-fields');
+      const ngoFields = document.getElementById('ngo-fields');
+      let currentRole = 'VOLUNTEER';
+
+      // Check URL query parameters (e.g. ?role=NGO)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('role') === 'NGO') {
+        selectRole('NGO');
+      }
+
+      volunteerCard.addEventListener('click', () => selectRole('VOLUNTEER'));
+      ngoCard.addEventListener('click', () => selectRole('NGO'));
+
+      function selectRole(role) {
+        currentRole = role;
+        if (role === 'VOLUNTEER') {
+          volunteerCard.classList.add('active');
+          ngoCard.classList.remove('active');
+          volunteerFields.style.display = 'block';
+          ngoFields.style.display = 'none';
+        } else {
+          ngoCard.classList.add('active');
+          volunteerCard.classList.remove('active');
+          ngoFields.style.display = 'block';
+          volunteerFields.style.display = 'none';
+        }
+      }
+
+      const form = document.getElementById('register-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const alertContainer = document.getElementById('alert-container');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertContainer.innerHTML = '';
+        document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          if (!email) document.getElementById('error-email').textContent = 'Email is required';
+          if (!password) document.getElementById('error-password').textContent = 'Password is required (min 8 chars)';
+          return;
+        }
+
+        let endpoint = '';
+        let payload = {};
+
+        if (currentRole === 'VOLUNTEER') {
+          const fullName = document.getElementById('fullName').value.trim();
+          if (!fullName) {
+            document.getElementById('error-fullName').textContent = 'Full name is required';
+            return;
+          }
+
+          endpoint = '/api/auth/register/volunteer';
+          payload = {
+            email,
+            password,
+            fullName,
+            phone: document.getElementById('phone').value.trim(),
+            city: document.getElementById('city').value.trim(),
+            skills: document.getElementById('skills').value.trim(),
+            interests: document.getElementById('interests').value.trim(),
+            bio: document.getElementById('bio').value.trim(),
+            showOnLeaderboard: document.getElementById('showOnLeaderboard').checked
+          };
+        } else {
+          const name = document.getElementById('ngoName').value.trim();
+          const cause = document.getElementById('cause').value;
+          const registrationNumber = document.getElementById('registrationNumber').value.trim();
+          const contactPerson = document.getElementById('contactPerson').value.trim();
+          const contactPhone = document.getElementById('contactPhone').value.trim();
+          const address = document.getElementById('address').value.trim();
+
+          let hasNgoError = false;
+          if (!name) { document.getElementById('error-name').textContent = 'NGO name is required'; hasNgoError = true; }
+          if (!registrationNumber) { document.getElementById('error-registrationNumber').textContent = 'Registration number is required'; hasNgoError = true; }
+          if (!contactPerson) { document.getElementById('error-contactPerson').textContent = 'Contact person is required'; hasNgoError = true; }
+          if (!contactPhone) { document.getElementById('error-contactPhone').textContent = 'Contact phone is required'; hasNgoError = true; }
+          if (!address) { document.getElementById('error-address').textContent = 'Address is required'; hasNgoError = true; }
+
+          if (hasNgoError) return;
+
+          endpoint = '/api/auth/register/ngo';
+          payload = {
+            email,
+            password,
+            name,
+            cause,
+            registrationNumber,
+            contactPerson,
+            contactPhone,
+            address,
+            description: document.getElementById('ngoDescription').value.trim()
+          };
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Creating Account...';
+
+        try {
+          await apiFetch(endpoint, {
+            method: 'POST',
+            body: payload
+          });
+
+          showToast('Account created successfully!', 'success');
+          setTimeout(() => {
+            window.location.href = '/login.html?registered=true';
+          }, 500);
+
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Complete Registration</span>';
+
+          if (err.data && err.data.fieldErrors) {
+            for (const [field, message] of Object.entries(err.data.fieldErrors)) {
+              const errorEl = document.getElementById(`error-${field}`);
+              if (errorEl) {
+                errorEl.textContent = message;
+              }
+            }
+          }
+
+          alertContainer.innerHTML = `
+            <div class="alert alert-danger">
+              ${escapeHtml(err.message || 'Registration failed. Please check the provided information.')}
+            </div>
+          `;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

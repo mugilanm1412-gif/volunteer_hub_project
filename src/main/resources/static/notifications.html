@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content" style="max-width: 800px;">
+    <div class="page-header">
+      <div>
+        <h1>In-App Notifications</h1>
+        <p>Activity alerts, registration updates, and certificate notifications</p>
+      </div>
+      <div>
+        <button id="btn-mark-all" class="btn btn-outline btn-sm">
+          Mark All as Read
+        </button>
+      </div>
+    </div>
+
+    <div id="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div style="text-align: center; padding: 2rem;">
+        <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+        <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading notifications...</p>
+      </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div id="pagination-controls" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;"></div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-size: 0.85rem;">Volunteer Hub &bull; Final Year Evaluation Ready</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let currentPage = 0;
+    const pageSize = 10;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadNotifications(0);
+
+      document.getElementById('btn-mark-all').addEventListener('click', async () => {
+        try {
+          await apiFetch('/api/notifications/read-all', { method: 'PATCH' });
+          showToast('All notifications marked as read', 'success');
+          loadNotifications(currentPage);
+          if (typeof loadUnreadNotifications === 'function') loadUnreadNotifications();
+        } catch (err) {
+          showToast('Failed to mark notifications read', 'danger');
+        }
+      });
+    });
+
+    async function loadNotifications(page) {
+      currentPage = page;
+      const listEl = document.getElementById('notifications-list');
+
+      try {
+        const data = await apiFetch(`/api/notifications?page=${page}&size=${pageSize}`);
+
+        if (!data.content || data.content.length === 0) {
+          listEl.innerHTML = `
+            <div class="card">
+              <div class="empty-state">
+                <div class="empty-state-icon">🔔</div>
+                <h3>No Notifications Yet</h3>
+                <p>When NGOs review your applications, update hours, or issue certificates, alerts will appear here.</p>
+              </div>
+            </div>
+          `;
+          document.getElementById('pagination-controls').innerHTML = '';
+          return;
+        }
+
+        listEl.innerHTML = data.content.map(n => {
+          const isUnread = !n.read;
+          const bgStyle = isUnread ? 'background-color: #ffffff; border-left: 4px solid var(--primary-600);' : 'background-color: var(--neutral-50); opacity: 0.85;';
+          const timeFormatted = new Date(n.createdAt).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+
+          return `
+            <div class="card" style="${bgStyle}">
+              <div class="card-body" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <h4 style="font-size: 1.05rem; margin: 0; color: var(--neutral-900);">${escapeHtml(n.title)}</h4>
+                    ${isUnread ? '<span class="badge badge-success" style="font-size: 0.65rem;">New</span>' : ''}
+                  </div>
+                  <p style="margin-bottom: 0.5rem; color: var(--neutral-700); font-size: 0.95rem;">
+                    ${escapeHtml(n.message)}
+                  </p>
+                  <span style="font-size: 0.8rem; color: var(--neutral-400);">
+                    ${timeFormatted}
+                  </span>
+                </div>
+                ${isUnread ? `
+                  <button class="btn btn-outline btn-sm" onclick="markSingleRead(${n.id})" title="Mark as read">
+                    ✓ Read
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Render Pagination
+        renderPagination(data.totalPages, data.page);
+
+      } catch (err) {
+        listEl.innerHTML = `
+          <div class="alert alert-danger">
+            Failed to load notifications: ${escapeHtml(err.message)}
+          </div>
+        `;
+      }
+    }
+
+    async function markSingleRead(id) {
+      try {
+        await apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
+        loadNotifications(currentPage);
+        if (typeof loadUnreadNotifications === 'function') loadUnreadNotifications();
+      } catch (err) {
+        showToast('Error marking notification as read', 'danger');
+      }
+    }
+
+    function renderPagination(totalPages, page) {
+      const container = document.getElementById('pagination-controls');
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      if (page > 0) {
+        html += `<button class="btn btn-secondary btn-sm" onclick="loadNotifications(${page - 1})">Previous</button>`;
+      }
+      html += `<span style="align-self: center; font-size: 0.85rem; color: var(--neutral-600);">Page ${page + 1} of ${totalPages}</span>`;
+      if (page < totalPages - 1) {
+        html += `<button class="btn btn-secondary btn-sm" onclick="loadNotifications(${page + 1})">Next</button>`;
+      }
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

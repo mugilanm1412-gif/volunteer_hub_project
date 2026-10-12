@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content" style="max-width: 480px; margin: 3rem auto;">
+    <div class="card" style="box-shadow: var(--shadow-lg);">
+      <div class="card-header" style="text-align: center; display: block; padding: 2rem 2rem 1rem 2rem;">
+        <h2 style="font-size: 1.65rem;">Welcome Back</h2>
+        <p style="color: var(--neutral-500); margin-top: 0.25rem;">Sign in to access your dashboard</p>
+      </div>
+
+      <div class="card-body" style="padding: 1.5rem 2rem 2rem 2rem;">
+        <div id="alert-container"></div>
+
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label class="form-label required" for="email">Email Address</label>
+            <input type="email" id="email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+            <span id="email-error" class="form-error"></span>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label class="form-label required" for="password" style="margin-bottom: 0;">Password</label>
+              <a href="/forgot-password.html" style="font-size: 0.85rem;">Forgot password?</a>
+            </div>
+            <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            <span id="password-error" class="form-error"></span>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.5rem;">
+            <span>Log In</span>
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--neutral-600);">
+          Don't have an account? <a href="/register.html" style="font-weight: 600;">Sign up</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Demo Accounts for College Evaluation -->
+    <div class="card" style="margin-top: 1.5rem; background-color: var(--neutral-50); border: 1px dashed var(--neutral-300);">
+      <div class="card-body" style="padding: 1.25rem;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--neutral-700);">Quick Demo Credentials (Pre-seeded):</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.85rem; color: var(--neutral-600);">
+          <div><strong>Volunteer:</strong> <code>alice@example.com</code> / <code>password123</code></div>
+          <div><strong>Verified NGO:</strong> <code>contact@greenearth.org</code> / <code>password123</code></div>
+          <div><strong>Admin:</strong> <code>admin@volunteerhub.org</code> / <code>password123</code></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-size: 0.85rem;">Volunteer Hub &bull; Final Year Evaluation Ready</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const alertContainer = document.getElementById('alert-container');
+
+      if (urlParams.get('expired') === 'true') {
+        alertContainer.innerHTML = `
+          <div class="alert alert-warning">
+            Your session has expired. Please log in again to continue.
+          </div>
+        `;
+      } else if (urlParams.get('registered') === 'true') {
+        alertContainer.innerHTML = `
+          <div class="alert alert-success">
+            Account created successfully! Please enter your credentials to log in.
+          </div>
+        `;
+      }
+
+      const form = document.getElementById('login-form');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const submitBtn = document.getElementById('submit-btn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertContainer.innerHTML = '';
+        document.getElementById('email-error').textContent = '';
+        document.getElementById('password-error').textContent = '';
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        let hasError = false;
+        if (!email) {
+          document.getElementById('email-error').textContent = 'Please enter your email address';
+          hasError = true;
+        }
+        if (!password) {
+          document.getElementById('password-error').textContent = 'Please enter your password';
+          hasError = true;
+        }
+        if (hasError) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
+
+        try {
+          const user = await apiFetch('/api/auth/login', {
+            method: 'POST',
+            body: { email, password }
+          });
+
+          showToast(`Welcome back, ${user.displayName || user.email}!`, 'success');
+
+          // Redirect to appropriate page
+          setTimeout(() => {
+            if (user.role === 'ADMIN') {
+              window.location.href = '/admin-dashboard.html';
+            } else if (user.role === 'NGO') {
+              window.location.href = '/ngo-dashboard.html';
+            } else {
+              window.location.href = '/events.html';
+            }
+          }, 400);
+
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Log In</span>';
+
+          alertContainer.innerHTML = `
+            <div class="alert alert-danger">
+              ${escapeHtml(err.message || 'Authentication failed. Please verify your email and password.')}
+            </div>
+          `;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

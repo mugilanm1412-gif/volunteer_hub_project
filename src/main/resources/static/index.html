@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volunteer Hub - Connect, Contribute & Track Performance</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content">
+    <!-- Hero Section -->
+    <div class="card" style="margin-bottom: 2.5rem; background: linear-gradient(135deg, #0f766e, #115e59); color: #ffffff; padding: 3.5rem 2.5rem; border-radius: var(--radius-lg); text-align: center;">
+      <h1 style="color: #ffffff; font-size: 2.75rem; margin-bottom: 1rem; font-weight: 800;">
+        Empowering Change Through Verified Action
+      </h1>
+      <p style="font-size: 1.25rem; color: var(--primary-100); max-width: 720px; margin: 0 auto 2rem auto;">
+        Join dedicated volunteers and verified NGOs. Participate in high-impact community drives, earn verified performance scores, and receive verifiable certificates.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/register.html" class="btn btn-lg" style="background-color: #ffffff; color: var(--primary-800); font-weight: 700;">
+          Become a Volunteer
+        </a>
+        <a href="/register.html?role=NGO" class="btn btn-lg btn-outline" style="border-color: #ffffff; color: #ffffff; font-weight: 700;">
+          Register as an NGO
+        </a>
+      </div>
+    </div>
+
+    <!-- Feature Highlights -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+      <div class="card">
+        <div class="card-body">
+          <div style="width: 48px; height: 48px; background-color: var(--primary-50); color: var(--primary-700); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <h3>Verified NGOs</h3>
+          <p style="color: var(--neutral-600); font-size: 0.95rem;">
+            Every participating organization is vetted and verified by system administrators before publishing events, ensuring safe and genuine opportunities.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div style="width: 48px; height: 48px; background-color: var(--accent-50); color: var(--accent-600); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <h3>Deterministic Performance</h3>
+          <p style="color: var(--neutral-600); font-size: 0.95rem;">
+            No arbitrary metrics. Your performance score is mathematically computed from attendance reliability (30%), verified contribution hours (40%), and NGO evaluations (30%).
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div style="width: 48px; height: 48px; background-color: var(--primary-50); color: var(--primary-700); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+          </div>
+          <h3>Automated Certification</h3>
+          <p style="color: var(--neutral-600); font-size: 0.95rem;">
+            Upon completion and NGO approval of attendance hours, verifiable PDF certificates with unique serial numbers are generated automatically.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-weight: 600;">Volunteer Hub and Performance Tracking System</p>
+      <p style="margin: 0; font-size: 0.85rem;">Built with Spring Boot 4.1 & Java 21 LTS &bull; Secure Session Authentication &bull; MySQL Relational Core</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+</body>
+</html>
