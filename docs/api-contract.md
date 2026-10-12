@@ -368,3 +368,273 @@ When an error occurs, all endpoints return a consistent JSON payload:
 - **URL:** `/api/notifications/read-all`
 - **Required Role:** Notification Owner
 - **Success Status:** `200 OK`
+
+---
+
+## 5. Admin NGO Verification (`/api/admin/ngos`)
+
+### 5.1 Verify or Reject NGO
+- **Method:** `PATCH`
+- **URL:** `/api/admin/ngos/{id}/verification`
+- **Required Role:** `ADMIN`
+- **Request Body:**
+  ```json
+  {
+    "status": "VERIFIED",
+    "rejectionReason": null
+  }
+  ```
+- **Validation Rules:**
+  - `status`: Must be either `VERIFIED` or `REJECTED`.
+  - `rejectionReason`: Required if status is `REJECTED`.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "id": 2,
+    "ngoName": "Ocean Rescue Initiative",
+    "verificationStatus": "VERIFIED",
+    "message": "NGO verification status updated successfully."
+  }
+  ```
+- **Error Responses:** `400 Bad Request`, `404 Not Found`.
+
+### 5.2 List NGOs
+- **Method:** `GET`
+- **URL:** `/api/admin/ngos?status=PENDING`
+- **Required Role:** `ADMIN`
+- **Success Status:** `200 OK`
+- **Response Body:** Array of `NgoProfileDto` objects.
+
+---
+
+## 6. Events Management (`/api/events`)
+
+### 6.1 List Published Events (Browse / Search / Filter)
+- **Method:** `GET`
+- **URL:** `/api/events?q=beach&category=Environment&location=Eco City&from=2026-10-01&to=2026-12-31&hasSlots=true&page=0&size=10`
+- **Required Role:** Public / Authenticated
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "content": [
+      {
+        "id": 2,
+        "ngoId": 2,
+        "ngoName": "Green Earth Foundation",
+        "title": "Urban Reforestation & Sapling Care",
+        "description": "Planting 300 native tree saplings...",
+        "category": "Environment",
+        "location": "Metro Green Belt Park",
+        "eventDate": "2026-10-19",
+        "startTime": "09:00:00",
+        "endTime": "13:00:00",
+        "requiredSkills": "Gardening, Enthusiasm",
+        "capacity": 15,
+        "approvedCount": 1,
+        "remainingSlots": 14,
+        "status": "PUBLISHED"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+  ```
+
+### 6.2 Get Event Details
+- **Method:** `GET`
+- **URL:** `/api/events/{id}`
+- **Required Role:** Public / Authenticated (Enriches with volunteer's application status if logged in)
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "id": 2,
+    "ngoId": 2,
+    "ngoName": "Green Earth Foundation",
+    "ngoContactPerson": "Elena Vance",
+    "ngoContactPhone": "+1-555-0101",
+    "title": "Urban Reforestation & Sapling Care",
+    "description": "Planting 300 native tree saplings...",
+    "category": "Environment",
+    "location": "Metro Green Belt Park",
+    "eventDate": "2026-10-19",
+    "startTime": "09:00:00",
+    "endTime": "13:00:00",
+    "requiredSkills": "Gardening, Enthusiasm",
+    "capacity": 15,
+    "approvedCount": 1,
+    "remainingSlots": 14,
+    "status": "PUBLISHED",
+    "userApplicationStatus": "APPROVED"
+  }
+  ```
+- **Error Responses:** `404 Not Found`.
+
+### 6.3 Create Event
+- **Method:** `POST`
+- **URL:** `/api/events`
+- **Required Role:** `NGO` (Must be `VERIFIED`)
+- **Request Body:**
+  ```json
+  {
+    "title": "Riverside Cleanup Drive",
+    "description": "Cleaning up debris along the East River canal.",
+    "category": "Environment",
+    "location": "River Walk, Sector 4",
+    "eventDate": "2026-11-05",
+    "startTime": "08:00:00",
+    "endTime": "12:00:00",
+    "requiredSkills": "Teamwork, Outdoor endurance",
+    "capacity": 30,
+    "status": "PUBLISHED"
+  }
+  ```
+- **Validation Rules:**
+  - `title`: Not blank, max 200 characters.
+  - `description`: Not blank.
+  - `category`: Not blank, max 100 characters.
+  - `location`: Not blank, max 255 characters.
+  - `eventDate`: Present or future date.
+  - `startTime`, `endTime`: Valid time format, `endTime` after `startTime`.
+  - `capacity`: Integer >= 1.
+  - `status`: `DRAFT` or `PUBLISHED`.
+- **Success Status:** `201 Created`
+- **Response Body:** `EventDto`
+- **Error Responses:** `400 Bad Request`, `403 Forbidden` (if NGO is not VERIFIED).
+
+### 6.4 Update Event
+- **Method:** `PUT`
+- **URL:** `/api/events/{id}`
+- **Required Role:** `NGO` (Owner of the event)
+- **Request Body:** Same as Create Event
+- **Success Status:** `200 OK`
+- **Response Body:** `EventDto`
+- **Error Responses:** `400 Bad Request`, `403 Forbidden`, `404 Not Found`.
+
+### 6.5 Delete Event
+- **Method:** `DELETE`
+- **URL:** `/api/events/{id}`
+- **Required Role:** `NGO` (Owner of the event)
+- **Rule:** Permitted only if the event has **zero registrations**. Otherwise, the event must be cancelled.
+- **Success Status:** `204 No Content`
+- **Error Responses:** `400 Bad Request` (if registrations exist), `403 Forbidden`, `404 Not Found`.
+
+### 6.6 Cancel Event
+- **Method:** `POST`
+- **URL:** `/api/events/{id}/cancel`
+- **Required Role:** `NGO` (Owner of the event)
+- **Request Body:**
+  ```json
+  {
+    "reason": "Severe weather alert predicted on event day."
+  }
+  ```
+- **Rule:** Marks event as `CANCELLED` and dispatches in-app notifications to all registered volunteers.
+- **Success Status:** `200 OK`
+- **Error Responses:** `400 Bad Request`, `403 Forbidden`, `404 Not Found`.
+
+### 6.7 Complete Event
+- **Method:** `POST`
+- **URL:** `/api/events/{id}/complete`
+- **Required Role:** `NGO` (Owner of the event)
+- **Rule:** Marks event as `COMPLETED`. Enables attendance marking in Phase 4.
+- **Success Status:** `200 OK`
+- **Error Responses:** `400 Bad Request`, `403 Forbidden`, `404 Not Found`.
+
+### 6.8 List NGO's Own Events
+- **Method:** `GET`
+- **URL:** `/api/events/mine?page=0&size=10`
+- **Required Role:** `NGO`
+- **Success Status:** `200 OK`
+- **Response Body:** Paginated list of `EventDto` objects.
+
+---
+
+## 7. Event Applications / Registrations (`/api/events/{id}/applications`, `/api/applications`, `/api/volunteers/me/applications`)
+
+### 7.1 Register for Event (Volunteer Application)
+- **Method:** `POST`
+- **URL:** `/api/events/{id}/applications`
+- **Required Role:** `VOLUNTEER`
+- **Rule:** Pessimistic lock (`@Lock(PESSIMISTIC_WRITE)`) on the event row prevents overbooking. Cannot register if event is cancelled, completed, removed, in the past, or full. Duplicate registration prohibited.
+- **Success Status:** `201 Created`
+- **Response Body:**
+  ```json
+  {
+    "id": 7,
+    "eventId": 2,
+    "eventTitle": "Urban Reforestation & Sapling Care",
+    "volunteerId": 4,
+    "status": "PENDING",
+    "appliedAt": "2026-10-12T14:40:00Z",
+    "message": "Application submitted successfully. Awaiting NGO review."
+  }
+  ```
+- **Error Responses:** `400 Bad Request` (event full, past, or cancelled), `409 Conflict` (already registered).
+
+### 7.2 Get Event Applications (NGO Review)
+- **Method:** `GET`
+- **URL:** `/api/events/{id}/applications`
+- **Required Role:** `NGO` (Owner of the event)
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  [
+    {
+      "id": 5,
+      "volunteerId": 7,
+      "volunteerName": "Diana Prince",
+      "volunteerEmail": "diana@example.com",
+      "volunteerPhone": "+1-555-0204",
+      "volunteerSkills": "Teaching, Coordination, Art therapy",
+      "status": "PENDING",
+      "appliedAt": "2026-10-11T12:00:00Z"
+    }
+  ]
+  ```
+
+### 7.3 Approve or Reject Application
+- **Method:** `PATCH`
+- **URL:** `/api/applications/{id}/status`
+- **Required Role:** `NGO` (Owner of the event)
+- **Request Body:**
+  ```json
+  {
+    "status": "APPROVED"
+  }
+  ```
+- **Rule:** When approving, locks event row to ensure `approvedCount < capacity`. On approval or rejection, sends in-app notification to the volunteer.
+- **Success Status:** `200 OK`
+- **Response Body:** `ApplicationDto`
+- **Error Responses:** `400 Bad Request` (capacity reached or invalid transition), `403 Forbidden`.
+
+### 7.4 Cancel Application (Volunteer Self-Cancellation)
+- **Method:** `POST`
+- **URL:** `/api/applications/{id}/cancel`
+- **Required Role:** `VOLUNTEER` (Owner of the application)
+- **Rule:** Can only cancel before event date. If application was `APPROVED`, cancelling frees the reserved slot.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "id": 5,
+    "status": "CANCELLED",
+    "message": "Registration cancelled successfully."
+  }
+  ```
+- **Error Responses:** `400 Bad Request` (event date has already arrived or passed), `403 Forbidden`.
+
+### 7.5 List Volunteer's Applications (My Events)
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/applications?tab=upcoming&page=0&size=10`
+- **Required Role:** `VOLUNTEER`
+- **Parameters:**
+  - `tab`: `upcoming` (Approved & event date >= today), `completed` (Approved & event date < today or event COMPLETED), `pending` (Status PENDING), or `all`
+  - `page`, `size`
+- **Success Status:** `200 OK`
+- **Response Body:** Paginated list of `VolunteerApplicationDto`
+

@@ -63,16 +63,22 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers(
-                    "/api/auth/login",
-                    "/api/auth/logout",
-                    "/api/auth/register/**",
-                    "/api/auth/forgot-password",
-                    "/api/auth/reset-password"
-                )
-            )
+            .csrf(csrf -> {
+                org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler =
+                    new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
+                requestHandler.setCsrfRequestAttributeName(null);
+                csrf
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .csrfTokenRequestHandler(requestHandler)
+                    .ignoringRequestMatchers(
+                        "/api/auth/login",
+                        "/api/auth/logout",
+                        "/api/auth/register/**",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password"
+                    );
+            })
+            .addFilterAfter(new com.volunteerhub.security.CsrfCookieFilter(), org.springframework.security.web.authentication.www.BasicAuthenticationFilter.class)
             .exceptionHandling(exceptions -> exceptions
                 .defaultAuthenticationEntryPointFor(authenticationEntryPoint,
                     request -> request.getRequestURI().startsWith("/api/"))
@@ -86,6 +92,9 @@ public class SecurityConfig {
 
                 // Public Authentication Endpoints
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // Public Event Endpoints (Listing and details)
+                .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/{id:[0-9]+}").permitAll()
 
                 // Role-Specific Endpoints
                 .requestMatchers("/api/volunteers/**").hasRole("VOLUNTEER")
