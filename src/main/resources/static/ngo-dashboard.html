@@ -7,6 +7,99 @@
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/components.css">
+  <style>
+    .kpi-grid-ngo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .ngo-kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .ngo-kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      color: var(--neutral-500);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .kpi-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--neutral-900);
+      margin: 0.25rem 0;
+    }
+
+    .kpi-subtext {
+      font-size: 0.8rem;
+      color: var(--neutral-500);
+    }
+
+    .charts-grid-ngo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-box {
+      width: 100%;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body>
   <!-- Dynamic Navigation Bar -->
@@ -16,20 +109,85 @@
     <div class="page-header">
       <div>
         <h1 id="ngo-name-title">Organization Dashboard</h1>
-        <p>Manage your published volunteering drives and review volunteer applications</p>
+        <p>Manage your published volunteering drives, track volunteer mobilization, and view impact analytics</p>
       </div>
-      <div>
-        <a href="/create-event.html" class="btn btn-primary">+ Create New Event</a>
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="/create-event.html" class="btn btn-primary btn-sm">+ Create New Event</a>
+        <a href="/attendance-management.html" class="btn btn-secondary btn-sm">Attendance & Ratings</a>
       </div>
     </div>
 
     <!-- Verification Status Banner -->
     <div id="ngo-verification-banner" style="margin-bottom: 2rem;"></div>
 
+    <!-- KPI Telemetry Grid -->
+    <div class="kpi-grid-ngo" id="ngo-kpi-container">
+      <div class="ngo-kpi-card">
+        <div>
+          <div class="kpi-icon">📅</div>
+          <div class="kpi-label">Drives Created</div>
+          <div class="kpi-value" id="kpi-events-created">0</div>
+        </div>
+        <div class="kpi-subtext">Total organized initiatives</div>
+      </div>
+
+      <div class="ngo-kpi-card">
+        <div>
+          <div class="kpi-icon">⏳</div>
+          <div class="kpi-label">Upcoming Drives</div>
+          <div class="kpi-value" id="kpi-upcoming-events" style="color: var(--primary-700);">0</div>
+        </div>
+        <div class="kpi-subtext" id="sub-completed-events">0 completed</div>
+      </div>
+
+      <div class="ngo-kpi-card">
+        <div>
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-label">Total Applicants</div>
+          <div class="kpi-value" id="kpi-total-applicants">0</div>
+        </div>
+        <div class="kpi-subtext" id="sub-approved-volunteers">0 approved participants</div>
+      </div>
+
+      <div class="ngo-kpi-card">
+        <div>
+          <div class="kpi-icon">⏱️</div>
+          <div class="kpi-label">Verified Hours</div>
+          <div class="kpi-value" id="kpi-verified-hours" style="color: #6366f1;">0.0 hrs</div>
+        </div>
+        <div class="kpi-subtext">Mobilized community service</div>
+      </div>
+    </div>
+
+    <!-- Plain SVG Charts Section -->
+    <div class="charts-grid-ngo">
+      <div class="chart-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0; font-size: 1.05rem;">Impact by Cause Category</h3>
+          <span class="badge badge-neutral" id="ngo-cat-total">Total: 0 hrs</span>
+        </div>
+        <div id="ngo-cat-chart-box" class="chart-box">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+        </div>
+        <div id="ngo-cat-legend" class="chart-legend"></div>
+      </div>
+
+      <div class="chart-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0; font-size: 1.05rem;">Mobilization Activity Trends</h3>
+          <span class="badge badge-info">Monthly Breakdown</span>
+        </div>
+        <div id="ngo-activity-chart-box" class="chart-box">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+        </div>
+        <div id="ngo-activity-legend" class="chart-legend"></div>
+      </div>
+    </div>
+
     <!-- Published Events Section -->
     <div class="card">
       <div class="card-header">
-        <h3 style="margin: 0; font-size: 1.2rem;">Our Published Events</h3>
+        <h3 style="margin: 0; font-size: 1.2rem;">Our Published Initiatives</h3>
         <span id="events-total-badge" class="badge badge-neutral">0 Events</span>
       </div>
       <div class="card-body" style="padding: 0;">
@@ -62,6 +220,7 @@
 
         const profile = await apiFetch('/api/ngos/me/profile');
         renderNgoStatus(profile);
+        loadNgoDashboard();
         loadMyEvents();
       } catch (err) {
         window.location.href = '/login.html?redirect=/ngo-dashboard.html';
@@ -69,12 +228,11 @@
     });
 
     function showNotNgo() {
-      const container = document.getElementById('events-table-container');
-      container.innerHTML = `
-        <div class="empty-state">
+      document.querySelector('main').innerHTML = `
+        <div class="empty-state" style="padding: 4rem 1rem;">
           <div class="empty-state-icon">🏢</div>
-          <h3>NGO Portal Access</h3>
-          <p>This dashboard is reserved for registered non-profit organizations.</p>
+          <h2>NGO Portal Access Required</h2>
+          <p>This console is reserved for registered non-profit organizations.</p>
           <a href="/login.html" class="btn btn-primary" style="margin-top: 1rem;">Log In as NGO</a>
         </div>
       `;
@@ -116,6 +274,153 @@
       }
     }
 
+    async function loadNgoDashboard() {
+      try {
+        const data = await apiFetch('/api/dashboard/ngo');
+        
+        document.getElementById('kpi-events-created').textContent = data.eventsCreated || 0;
+        document.getElementById('kpi-upcoming-events').textContent = data.upcomingEventsCount || 0;
+        document.getElementById('sub-completed-events').textContent = `${data.completedEventsCount || 0} completed`;
+        document.getElementById('kpi-total-applicants').textContent = data.totalApplicants || 0;
+        document.getElementById('sub-approved-volunteers').textContent = `${data.approvedVolunteersCount || 0} approved volunteers`;
+
+        const hours = data.totalVerifiedHours != null ? Number(data.totalVerifiedHours).toFixed(1) : '0.0';
+        document.getElementById('kpi-verified-hours').textContent = `${hours} hrs`;
+
+        // Render plain SVG charts
+        renderCategoryChart(data.hoursByCategory || [], hours);
+        renderActivityChart(data.activity || []);
+      } catch (err) {
+        showToast(err.message || 'Failed to load NGO dashboard telemetry', 'danger');
+      }
+    }
+
+    // ========================================================
+    // PLAIN SVG DONUT CHART: Category Hours
+    // ========================================================
+    function renderCategoryChart(categories, totalHoursStr) {
+      const box = document.getElementById('ngo-cat-chart-box');
+      const legend = document.getElementById('ngo-cat-legend');
+      const totalBadge = document.getElementById('ngo-cat-total');
+      totalBadge.textContent = `Total: ${totalHoursStr} hrs`;
+
+      if (!categories || categories.length === 0) {
+        box.innerHTML = `<p style="color: var(--neutral-400); font-size: 0.9rem;">No category hours recorded yet.</p>`;
+        legend.innerHTML = '';
+        return;
+      }
+
+      const colors = ['#0d9488', '#0284c7', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#64748b'];
+      const total = categories.reduce((sum, c) => sum + Number(c.totalHours || 0), 0);
+
+      if (total <= 0) {
+        box.innerHTML = `<p style="color: var(--neutral-400); font-size: 0.9rem;">Zero verified hours recorded.</p>`;
+        legend.innerHTML = '';
+        return;
+      }
+
+      const size = 180;
+      const strokeWidth = 28;
+      const radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+      let accumulatedPercent = 0;
+
+      let circlesHtml = '';
+      let legendHtml = '';
+
+      categories.forEach((cat, idx) => {
+        const val = Number(cat.totalHours || 0);
+        const percent = val / total;
+        const strokeDasharray = `${percent * circumference} ${circumference}`;
+        const strokeDashoffset = -accumulatedPercent * circumference;
+        const color = colors[idx % colors.length];
+
+        circlesHtml += `
+          <circle cx="${size / 2}" cy="${size / 2}" r="${radius}"
+                  fill="transparent"
+                  stroke="${color}"
+                  stroke-width="${strokeWidth}"
+                  stroke-dasharray="${strokeDasharray}"
+                  stroke-dashoffset="${strokeDashoffset}">
+            <title>${escapeHtml(cat.category)}: ${val.toFixed(1)} hrs (${Math.round(percent * 100)}%)</title>
+          </circle>
+        `;
+
+        legendHtml += `
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: ${color};"></span>
+            <span>${escapeHtml(cat.category)}: <strong>${val.toFixed(1)}h</strong></span>
+          </div>
+        `;
+
+        accumulatedPercent += percent;
+      });
+
+      box.innerHTML = `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform: rotate(-90deg);">
+          ${circlesHtml}
+        </svg>
+      `;
+      legend.innerHTML = legendHtml;
+    }
+
+    // ========================================================
+    // PLAIN SVG BAR CHART: Activity Trends
+    // ========================================================
+    function renderActivityChart(activity) {
+      const box = document.getElementById('ngo-activity-chart-box');
+      const legend = document.getElementById('ngo-activity-legend');
+
+      if (!activity || activity.length === 0) {
+        box.innerHTML = `<p style="color: var(--neutral-400); font-size: 0.9rem;">No monthly activity data recorded yet.</p>`;
+        legend.innerHTML = '';
+        return;
+      }
+
+      const maxHours = Math.max(...activity.map(d => Number(d.totalHours || 0)), 5);
+      const width = 320;
+      const height = 160;
+      const padding = 25;
+      const barWidth = Math.max(16, (width - padding * 2) / activity.length - 12);
+
+      let barsHtml = '';
+      activity.forEach((d, idx) => {
+        const val = Number(d.totalHours || 0);
+        const barHeight = Math.max(4, (val / maxHours) * (height - padding * 2));
+        const x = padding + idx * ((width - padding * 2) / activity.length) + 6;
+        const y = height - padding - barHeight;
+
+        barsHtml += `
+          <g>
+            <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}"
+                  fill="#0284c7" rx="3">
+              <title>${escapeHtml(d.label)}: ${val.toFixed(1)} hrs (${d.volunteerCount || 0} volunteers)</title>
+            </rect>
+            <text x="${x + barWidth / 2}" y="${height - 8}"
+                  font-size="9" fill="var(--neutral-500)" text-anchor="middle">
+              ${escapeHtml(d.label ? d.label.split(' ')[0] : d.period)}
+            </text>
+            <text x="${x + barWidth / 2}" y="${y - 4}"
+                  font-size="9" font-weight="600" fill="var(--neutral-700)" text-anchor="middle">
+              ${val > 0 ? val.toFixed(0) : ''}
+            </text>
+          </g>
+        `;
+      });
+
+      box.innerHTML = `
+        <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
+          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}"
+                stroke="var(--neutral-300)" stroke-width="1" />
+          ${barsHtml}
+        </svg>
+      `;
+      legend.innerHTML = `<span style="color: var(--neutral-500);">Monthly volunteer service contributions</span>`;
+    }
+
+    // ========================================================
+    // PUBLISHED EVENTS TABLE
+    // ========================================================
     async function loadMyEvents() {
       const container = document.getElementById('events-table-container');
       const badge = document.getElementById('events-total-badge');

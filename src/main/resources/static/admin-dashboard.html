@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -193,6 +194,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Dynamic Navigation Bar -->
   <nav id="app-nav" class="app-navbar"></nav>
@@ -273,7 +275,7 @@
         <div class="toolbar-inputs">
           <div class="search-input-wrap">
             <input type="text" id="user-search" class="form-control" placeholder="Search by name or email..."
-                   onkeydown="if(event.key==='Enter') searchUsers(0)">
+              onkeydown="if(event.key==='Enter') searchUsers(0)">
           </div>
           <select id="user-role-filter" class="form-select" style="width: auto;" onchange="searchUsers(0)">
             <option value="">All Roles</option>
@@ -311,7 +313,7 @@
         <div class="toolbar-inputs">
           <div class="search-input-wrap">
             <input type="text" id="event-search" class="form-control" placeholder="Search event title..."
-                   onkeydown="if(event.key==='Enter') searchEvents(0)">
+              onkeydown="if(event.key==='Enter') searchEvents(0)">
           </div>
           <select id="event-status-filter" class="form-select" style="width: auto;" onchange="searchEvents(0)">
             <option value="">All Statuses</option>
@@ -344,8 +346,9 @@
       <div class="toolbar-filter">
         <div class="toolbar-inputs">
           <div class="search-input-wrap">
-            <input type="text" id="audit-action-filter" class="form-control" placeholder="Filter by action (e.g. EVENT_REMOVED)..."
-                   onkeydown="if(event.key==='Enter') searchAuditLogs(0)">
+            <input type="text" id="audit-action-filter" class="form-control"
+              placeholder="Filter by action (e.g. EVENT_REMOVED)..."
+              onkeydown="if(event.key==='Enter') searchAuditLogs(0)">
           </div>
           <select id="audit-entity-filter" class="form-select" style="width: auto;" onchange="searchAuditLogs(0)">
             <option value="">All Entity Types</option>
@@ -383,12 +386,13 @@
       </div>
       <div class="modal-body">
         <p style="color: var(--neutral-600); margin-bottom: 1rem;">
-          Please state the reason for declining this organization's verification request. The contact person will see this feedback.
+          Please state the reason for declining this organization's verification request. The contact person will see
+          this feedback.
         </p>
         <div class="form-group">
           <label class="form-label required" for="rejection-reason">Reason for Rejection</label>
           <textarea id="rejection-reason" class="form-control" rows="3" required
-                    placeholder="e.g. Official registration certificate is unreadable or expired..."></textarea>
+            placeholder="e.g. Official registration certificate is unreadable or expired..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -407,15 +411,18 @@
       </div>
       <div class="modal-body">
         <div class="alert alert-danger" style="margin-bottom: 1rem;">
-          <strong>Warning:</strong> Soft-removing this event will immediately change its status to <code>REMOVED</code>, prevent any further sign-ups, dispatch in-app cancellation notifications to all registered volunteers and the host NGO, and record an audit log entry.
+          <strong>Warning:</strong> Soft-removing this event will immediately change its status to <code>REMOVED</code>,
+          prevent any further sign-ups, dispatch in-app cancellation notifications to all registered volunteers and the
+          host NGO, and record an audit log entry.
         </div>
         <p style="color: var(--neutral-700); margin-bottom: 0.5rem;">
-          Target Event: <strong id="remove-event-title-display"></strong> (ID: <span id="remove-event-id-display"></span>)
+          Target Event: <strong id="remove-event-title-display"></strong> (ID: <span
+            id="remove-event-id-display"></span>)
         </p>
         <div class="form-group">
           <label class="form-label required" for="remove-event-reason">Reason for Removal</label>
           <textarea id="remove-event-reason" class="form-control" rows="3" required
-                    placeholder="e.g. Inappropriate content, violation of platform terms, inaccurate event information..."></textarea>
+            placeholder="e.g. Inappropriate content, violation of platform terms, inaccurate event information..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -511,7 +518,7 @@
       const container = document.getElementById('stats-container');
       try {
         const stats = await apiFetch('/api/admin/stats');
-        
+
         // Update pending NGO badge in tab header
         const pendingBadge = document.getElementById('pending-ngo-badge');
         if (pendingBadge) {
@@ -596,6 +603,31 @@
             </div>
           </div>
 
+          <!-- Visual Analytics Grid (Plain SVG Charts) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0; font-size: 1.05rem;">Platform Hours by Cause Category</h3>
+                <span class="badge badge-neutral" id="admin-cat-total">Loading...</span>
+              </div>
+              <div id="admin-cat-chart-box" style="width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;">
+                <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              </div>
+              <div id="admin-cat-legend" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; font-size: 0.8rem;"></div>
+            </div>
+
+            <div class="card" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0; font-size: 1.05rem;">Monthly Volunteering Activity Trend</h3>
+                <span class="badge badge-info">Monthly Breakdown</span>
+              </div>
+              <div id="admin-activity-chart-box" style="width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;">
+                <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              </div>
+              <div id="admin-activity-legend" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; font-size: 0.8rem; color: var(--neutral-500);"></div>
+            </div>
+          </div>
+
           <!-- Quick Action Panels -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
             <div class="card">
@@ -614,6 +646,9 @@
                 </button>
                 <button class="btn btn-outline" style="text-align: left; justify-content: flex-start;" onclick="switchMainTab('audit')">
                   📜 Review Security Audit Trail
+                </button>
+                <button class="btn btn-outline" style="text-align: left; justify-content: flex-start; color: #b45309;" onclick="triggerScheduledReminders()">
+                  🔔 Trigger Tomorrow's Volunteer Reminders (Scheduler Test)
                 </button>
               </div>
             </div>
@@ -635,12 +670,147 @@
             </div>
           </div>
         `;
+
+        loadAdminCharts();
       } catch (err) {
         container.innerHTML = `
           <div class="alert alert-danger">
             Failed to load platform overview telemetry: ${escapeHtml(err.message)}
           </div>
         `;
+      }
+    }
+
+    async function loadAdminCharts() {
+      // 1. Category Donut Chart
+      try {
+        const categories = await apiFetch('/api/reports/hours-by-category');
+        const box = document.getElementById('admin-cat-chart-box');
+        const legend = document.getElementById('admin-cat-legend');
+        const totalBadge = document.getElementById('admin-cat-total');
+
+        if (!categories || categories.length === 0) {
+          box.innerHTML = `<p style="color: var(--neutral-400); font-size: 0.9rem;">No category hours recorded yet.</p>`;
+          totalBadge.textContent = '0.0 hrs';
+          return;
+        }
+
+        const total = categories.reduce((sum, c) => sum + Number(c.totalHours || 0), 0);
+        totalBadge.textContent = `Total: ${total.toFixed(1)} hrs`;
+
+        const colors = ['#0d9488', '#0284c7', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#64748b'];
+        const size = 160;
+        const strokeWidth = 24;
+        const radius = (size - strokeWidth) / 2;
+        const circumference = 2 * Math.PI * radius;
+        let accumulatedPercent = 0;
+
+        let circlesHtml = '';
+        let legendHtml = '';
+
+        categories.forEach((cat, idx) => {
+          const val = Number(cat.totalHours || 0);
+          const percent = total > 0 ? val / total : 0;
+          const strokeDasharray = `${percent * circumference} ${circumference}`;
+          const strokeDashoffset = -accumulatedPercent * circumference;
+          const color = colors[idx % colors.length];
+
+          circlesHtml += `
+            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}"
+                    fill="transparent"
+                    stroke="${color}"
+                    stroke-width="${strokeWidth}"
+                    stroke-dasharray="${strokeDasharray}"
+                    stroke-dashoffset="${strokeDashoffset}">
+              <title>${escapeHtml(cat.category)}: ${val.toFixed(1)} hrs (${Math.round(percent * 100)}%)</title>
+            </circle>
+          `;
+
+          legendHtml += `
+            <div style="display: inline-flex; align-items: center; gap: 0.4rem;">
+              <span style="width: 10px; height: 10px; border-radius: 2px; background-color: ${color};"></span>
+              <span>${escapeHtml(cat.category)}: <strong>${val.toFixed(1)}h</strong></span>
+            </div>
+          `;
+
+          accumulatedPercent += percent;
+        });
+
+        box.innerHTML = `
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform: rotate(-90deg);">
+            ${circlesHtml}
+          </svg>
+        `;
+        legend.innerHTML = legendHtml;
+      } catch (err) {
+        document.getElementById('admin-cat-chart-box').innerHTML = `<p style="color: var(--neutral-400); font-size: 0.85rem;">Failed to load category data</p>`;
+      }
+
+      // 2. Activity Bar Chart
+      try {
+        const activity = await apiFetch('/api/reports/activity?granularity=MONTHLY');
+        const box = document.getElementById('admin-activity-chart-box');
+        const legend = document.getElementById('admin-activity-legend');
+
+        if (!activity || activity.length === 0) {
+          box.innerHTML = `<p style="color: var(--neutral-400); font-size: 0.9rem;">No monthly activity records.</p>`;
+          return;
+        }
+
+        const maxHours = Math.max(...activity.map(d => Number(d.totalHours || 0)), 5);
+        const width = 320;
+        const height = 150;
+        const padding = 20;
+        const barWidth = Math.max(16, (width - padding * 2) / activity.length - 12);
+
+        let barsHtml = '';
+        activity.forEach((d, idx) => {
+          const val = Number(d.totalHours || 0);
+          const barHeight = Math.max(4, (val / maxHours) * (height - padding * 2));
+          const x = padding + idx * ((width - padding * 2) / activity.length) + 6;
+          const y = height - padding - barHeight;
+
+          barsHtml += `
+            <g>
+              <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}"
+                    fill="var(--primary-700)" rx="3">
+                <title>${escapeHtml(d.label)}: ${val.toFixed(1)} hrs (${d.volunteerCount || 0} volunteers)</title>
+              </rect>
+              <text x="${x + barWidth / 2}" y="${height - 6}"
+                    font-size="9" fill="var(--neutral-500)" text-anchor="middle">
+                ${escapeHtml(d.label ? d.label.split(' ')[0] : d.period)}
+              </text>
+              <text x="${x + barWidth / 2}" y="${y - 4}"
+                    font-size="9" font-weight="600" fill="var(--neutral-700)" text-anchor="middle">
+                ${val > 0 ? val.toFixed(0) : ''}
+              </text>
+            </g>
+          `;
+        });
+
+        box.innerHTML = `
+          <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">
+            <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}"
+                  stroke="var(--neutral-300)" stroke-width="1" />
+            ${barsHtml}
+          </svg>
+        `;
+        legend.innerHTML = `<span>Monthly verified hours platform-wide</span>`;
+      } catch (err) {
+        document.getElementById('admin-activity-chart-box').innerHTML = `<p style="color: var(--neutral-400); font-size: 0.85rem;">Failed to load activity trends</p>`;
+      }
+    }
+
+    async function triggerScheduledReminders() {
+      if (!confirm("Trigger tomorrow's event reminders now? This invokes the scheduled reminder dispatch idempotently.")) {
+        return;
+      }
+
+      try {
+        const res = await apiFetch('/api/admin/reminders/trigger', { method: 'POST' });
+        showToast(res.message || `Dispatched ${res.sentCount} reminders.`, 'success');
+      } catch (err) {
+        showToast(err.message || 'Failed to trigger reminders', 'danger');
       }
     }
 
@@ -693,11 +863,11 @@
             </thead>
             <tbody>
               ${ngos.map(ngo => {
-                let badgeClass = 'badge-warning';
-                if (ngo.verificationStatus === 'VERIFIED') badgeClass = 'badge-success';
-                else if (ngo.verificationStatus === 'REJECTED') badgeClass = 'badge-danger';
+          let badgeClass = 'badge-warning';
+          if (ngo.verificationStatus === 'VERIFIED') badgeClass = 'badge-success';
+          else if (ngo.verificationStatus === 'REJECTED') badgeClass = 'badge-danger';
 
-                return `
+          return `
                   <tr>
                     <td>
                       <div style="font-weight: 700; color: var(--neutral-900);">${escapeHtml(ngo.name)}</div>
@@ -745,7 +915,7 @@
                     </td>
                   </tr>
                 `;
-              }).join('')}
+        }).join('')}
             </tbody>
           </table>
         `;
@@ -876,18 +1046,18 @@
             </thead>
             <tbody>
               ${users.map(u => {
-                const isSelf = currentAdmin && currentAdmin.id === u.id;
-                let roleBadgeClass = 'badge-volunteer';
-                if (u.role === 'ADMIN') roleBadgeClass = 'badge-admin';
-                else if (u.role === 'NGO') roleBadgeClass = 'badge-ngo';
+          const isSelf = currentAdmin && currentAdmin.id === u.id;
+          let roleBadgeClass = 'badge-volunteer';
+          if (u.role === 'ADMIN') roleBadgeClass = 'badge-admin';
+          else if (u.role === 'NGO') roleBadgeClass = 'badge-ngo';
 
-                let statusBadge = 'badge-success';
-                if (u.status === 'SUSPENDED') statusBadge = 'badge-warning';
-                else if (u.status === 'DEACTIVATED') statusBadge = 'badge-danger';
+          let statusBadge = 'badge-success';
+          if (u.status === 'SUSPENDED') statusBadge = 'badge-warning';
+          else if (u.status === 'DEACTIVATED') statusBadge = 'badge-danger';
 
-                const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A';
+          const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A';
 
-                return `
+          return `
                   <tr>
                     <td><span style="font-family: monospace; color: var(--neutral-500);">#${u.id}</span></td>
                     <td>
@@ -918,7 +1088,7 @@
                     </td>
                   </tr>
                 `;
-              }).join('')}
+        }).join('')}
             </tbody>
           </table>
         `;
@@ -1017,13 +1187,13 @@
             </thead>
             <tbody>
               ${events.map(ev => {
-                let statusBadge = 'badge-neutral';
-                if (ev.status === 'PUBLISHED') statusBadge = 'badge-success';
-                else if (ev.status === 'COMPLETED') statusBadge = 'badge-info';
-                else if (ev.status === 'CANCELLED') statusBadge = 'badge-warning';
-                else if (ev.status === 'REMOVED') statusBadge = 'badge-danger';
+          let statusBadge = 'badge-neutral';
+          if (ev.status === 'PUBLISHED') statusBadge = 'badge-success';
+          else if (ev.status === 'COMPLETED') statusBadge = 'badge-info';
+          else if (ev.status === 'CANCELLED') statusBadge = 'badge-warning';
+          else if (ev.status === 'REMOVED') statusBadge = 'badge-danger';
 
-                return `
+          return `
                   <tr>
                     <td><span style="font-family: monospace; color: var(--neutral-500);">#${ev.id}</span></td>
                     <td>
@@ -1065,7 +1235,7 @@
                     </td>
                   </tr>
                 `;
-              }).join('')}
+        }).join('')}
             </tbody>
           </table>
         `;
@@ -1178,14 +1348,14 @@
             </thead>
             <tbody>
               ${logs.map(lg => {
-                const dateStr = lg.createdAt ? new Date(lg.createdAt).toLocaleString() : 'N/A';
-                
-                let actionBadge = 'badge-neutral';
-                if (lg.action && lg.action.includes('REMOVED')) actionBadge = 'badge-danger';
-                else if (lg.action && (lg.action.includes('VERIFIED') || lg.action.includes('APPROVED'))) actionBadge = 'badge-success';
-                else if (lg.action && (lg.action.includes('REJECTED') || lg.action.includes('SUSPENDED'))) actionBadge = 'badge-warning';
+          const dateStr = lg.createdAt ? new Date(lg.createdAt).toLocaleString() : 'N/A';
 
-                return `
+          let actionBadge = 'badge-neutral';
+          if (lg.action && lg.action.includes('REMOVED')) actionBadge = 'badge-danger';
+          else if (lg.action && (lg.action.includes('VERIFIED') || lg.action.includes('APPROVED'))) actionBadge = 'badge-success';
+          else if (lg.action && (lg.action.includes('REJECTED') || lg.action.includes('SUSPENDED'))) actionBadge = 'badge-warning';
+
+          return `
                   <tr>
                     <td><span style="font-family: monospace; color: var(--neutral-500);">#${lg.id}</span></td>
                     <td style="font-size: 0.85rem; color: var(--neutral-600); white-space: nowrap;">
@@ -1211,7 +1381,7 @@
                     </td>
                   </tr>
                 `;
-              }).join('')}
+        }).join('')}
             </tbody>
           </table>
         `;
@@ -1267,4 +1437,5 @@
     }
   </script>
 </body>
+
 </html>

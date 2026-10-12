@@ -28,9 +28,12 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final com.volunteerhub.service.EventReminderService eventReminderService;
 
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService,
+                           com.volunteerhub.service.EventReminderService eventReminderService) {
         this.adminService = adminService;
+        this.eventReminderService = eventReminderService;
     }
 
     // ==========================================
@@ -119,5 +122,18 @@ public class AdminController {
     public ResponseEntity<AdminStatsDto> getStats() {
         AdminStatsDto stats = adminService.getPlatformStats();
         return ResponseEntity.ok(stats);
+    }
+
+    // ==========================================
+    // 6. Automated Reminders Trigger
+    // ==========================================
+
+    @PostMapping("/reminders/trigger")
+    public ResponseEntity<ReminderTriggerResponse> triggerReminders(
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date) {
+        java.time.LocalDate targetDate = date != null ? date : java.time.LocalDate.now().plusDays(1);
+        int sent = eventReminderService.sendUpcomingEventReminders(targetDate);
+        String message = String.format("Sent %d reminder notifications for events on %s.", sent, targetDate);
+        return ResponseEntity.ok(new ReminderTriggerResponse(sent, targetDate, message));
     }
 }

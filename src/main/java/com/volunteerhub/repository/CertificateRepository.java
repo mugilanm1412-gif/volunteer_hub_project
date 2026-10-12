@@ -51,4 +51,7 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     @Query(value = "SELECT certificate_number FROM certificates WHERE certificate_number LIKE :prefix ORDER BY certificate_number DESC, id DESC LIMIT 1",
            nativeQuery = true)
     Optional<String> findLatestCertificateNumberForPrefix(@Param("prefix") String prefix);
+
+    @Query("SELECT COUNT(c) FROM Certificate c JOIN c.attendance a JOIN a.application app WHERE app.volunteer.id = :volunteerId")
+    long countByVolunteerId(@Param("volunteerId") Long volunteerId);
 }

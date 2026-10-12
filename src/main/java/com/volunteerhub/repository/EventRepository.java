@@ -65,4 +65,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
            Pageable pageable);
 
     long countByStatus(EventStatus status);
+
+    long countByNgoId(Long ngoId);
+
+    long countByNgoIdAndStatus(Long ngoId, EventStatus status);
+
+    long countByNgoIdAndStatusAndEventDateGreaterThanEqual(Long ngoId, EventStatus status, LocalDate date);
 }

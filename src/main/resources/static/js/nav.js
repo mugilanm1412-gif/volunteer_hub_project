@@ -32,6 +32,7 @@ function renderNavbar(container, user) {
     // Role-specific primary navigation links
     if (user.role === 'VOLUNTEER') {
       navLinksHtml = `
+        <li><a href="/volunteer-dashboard.html" class="nav-link ${currentPath.includes('volunteer-dashboard') ? 'active' : ''}">Dashboard</a></li>
         <li><a href="/events.html" class="nav-link ${currentPath.includes('events.html') ? 'active' : ''}">Opportunities</a></li>
         <li><a href="/my-events.html" class="nav-link ${currentPath.includes('my-events') ? 'active' : ''}">My Events</a></li>
         <li><a href="/performance.html" class="nav-link ${currentPath.includes('performance') ? 'active' : ''}">Performance</a></li>

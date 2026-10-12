@@ -1108,4 +1108,191 @@ When an error occurs, all endpoints return a consistent JSON payload:
   }
   ```
 
+---
+
+## 13. Dashboards, Reports & Reminder Scheduler (`/api/dashboard/*`, `/api/reports/*`)
+
+### 13.1 Volunteer Dashboard
+- **Method:** `GET`
+- **URL:** `/api/dashboard/volunteer` (also accessible via `/dashboard/volunteer`)
+- **Required Role:** `VOLUNTEER`
+- **Success Status:** `200 OK`
+- **Response Body (`VolunteerDashboardDto`):**
+  ```json
+  {
+    "volunteerName": "Alice Smith",
+    "verifiedHours": 24.50,
+    "completedEvents": 5,
+    "upcomingApprovedEvents": [
+      {
+        "id": 12,
+        "title": "Community Park Clean-Up",
+        "category": "Environment",
+        "eventDate": "2026-10-15",
+        "startTime": "09:00:00",
+        "endTime": "13:00:00",
+        "location": "Central Green Park",
+        "ngoName": "Green Earth Foundation"
+      }
+    ],
+    "upcomingEventsCount": 1,
+    "pendingRegistrationsCount": 2,
+    "attendanceRate": 100.0,
+    "averageRating": 4.85,
+    "performanceScore": 88.5,
+    "badge": "GOLD",
+    "certificatesCount": 4,
+    "recentActivity": [
+      {
+        "eventId": 10,
+        "eventTitle": "River Cleanup Drive",
+        "date": "2026-10-01",
+        "hoursWorked": 4.0,
+        "status": "APPROVED",
+        "rating": 5.0
+      }
+    ]
+  }
+  ```
+
+### 13.2 NGO Dashboard
+- **Method:** `GET`
+- **URL:** `/api/dashboard/ngo` (also accessible via `/dashboard/ngo`)
+- **Required Role:** `NGO`
+- **Success Status:** `200 OK`
+- **Response Body (`NgoDashboardDto`):**
+  ```json
+  {
+    "ngoName": "Green Earth Foundation",
+    "verificationStatus": "VERIFIED",
+    "eventsCreated": 8,
+    "upcomingEventsCount": 2,
+    "completedEventsCount": 5,
+    "totalApplicants": 45,
+    "approvedVolunteersCount": 38,
+    "totalVerifiedHours": 152.00,
+    "hoursByCategory": [
+      {
+        "category": "Environment",
+        "totalHours": 120.00,
+        "eventCount": 6,
+        "volunteerCount": 30
+      }
+    ],
+    "activity": [
+      {
+        "period": "2026-09",
+        "label": "Sep 2026",
+        "totalHours": 64.00,
+        "eventCount": 3,
+        "volunteerCount": 18
+      }
+    ]
+  }
+  ```
+
+### 13.3 Admin Platform Dashboard
+- **Method:** `GET`
+- **URL:** `/api/dashboard/admin` (also accessible via `/dashboard/admin`)
+- **Required Role:** `ADMIN`
+- **Success Status:** `200 OK`
+- **Response Body (`AdminDashboardDto`):**
+  ```json
+  {
+    "totalUsers": 25,
+    "totalVolunteers": 18,
+    "verifiedNgos": 5,
+    "pendingNgoVerifications": 1,
+    "activeEvents": 8,
+    "completedEvents": 5,
+    "totalVerifiedHours": 210.50,
+    "recentRegistrationsCount": 12,
+    "hoursByCategory": [
+      {
+        "category": "Environment",
+        "totalHours": 120.00,
+        "eventCount": 6,
+        "volunteerCount": 30
+      }
+    ],
+    "activity": [
+      {
+        "period": "2026-09",
+        "label": "Sep 2026",
+        "totalHours": 85.00,
+        "eventCount": 4,
+        "volunteerCount": 24
+      }
+    ]
+  }
+  ```
+
+### 13.4 Hours by Category Aggregate Report
+- **Method:** `GET`
+- **URL:** `/api/reports/hours-by-category` (also accessible via `/reports/hours-by-category`)
+- **Query Parameters:** `ngoId` (optional `Long`, restricts to NGO's events)
+- **Required Authentication:** Any authenticated user
+- **Success Status:** `200 OK`
+- **Response Body:** `List<CategoryHoursDto>`:
+  ```json
+  [
+    {
+      "category": "Environment",
+      "totalHours": 120.50,
+      "eventCount": 6,
+      "volunteerCount": 32
+    },
+    {
+      "category": "Education",
+      "totalHours": 45.00,
+      "eventCount": 2,
+      "volunteerCount": 14
+    }
+  ]
+  ```
+
+### 13.5 Activity Trends Aggregate Report
+- **Method:** `GET`
+- **URL:** `/api/reports/activity?granularity={MONTHLY|WEEKLY}&ngoId={Long}` (also `/reports/activity`)
+- **Query Parameters:**
+  - `granularity`: `MONTHLY` (default) or `WEEKLY`
+  - `ngoId`: Optional `Long`
+- **Required Authentication:** Any authenticated user
+- **Success Status:** `200 OK`
+- **Response Body:** `List<ActivityDataPointDto>`:
+  ```json
+  [
+    {
+      "period": "2026-08",
+      "label": "Aug 2026",
+      "totalHours": 50.00,
+      "eventCount": 2,
+      "volunteerCount": 12
+    },
+    {
+      "period": "2026-09",
+      "label": "Sep 2026",
+      "totalHours": 85.50,
+      "eventCount": 4,
+      "volunteerCount": 24
+    }
+  ]
+  ```
+
+### 13.6 Event Reminders Trigger
+- **Method:** `POST`
+- **URL:** `/api/admin/reminders/trigger?date={yyyy-MM-dd}`
+- **Required Role:** `ADMIN`
+- **Rule:** Triggers the event reminder notification service manually for a given target date (defaults to tomorrow `LocalDate.now().plusDays(1)`). Idempotent; duplicate notifications are prevented if executed multiple times.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "sentCount": 4,
+    "targetDate": "2026-10-14",
+    "message": "Sent 4 reminder notifications for events on 2026-10-14"
+  }
+  ```
+
+
 

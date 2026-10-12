@@ -60,4 +60,79 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     @Query("SELECT COALESCE(SUM(a.hoursWorked), 0) FROM Attendance a WHERE a.hoursStatus = 'APPROVED'")
     java.math.BigDecimal sumTotalVerifiedHours();
+
+    @Query("SELECT COALESCE(SUM(a.hoursWorked), 0) FROM Attendance a " +
+           "JOIN a.application app " +
+           "JOIN app.event e " +
+           "WHERE a.hoursStatus = 'APPROVED' " +
+           "AND e.ngo.id = :ngoId")
+    java.math.BigDecimal sumVerifiedHoursByNgoId(@Param("ngoId") Long ngoId);
+
+    @Query("SELECT e.category as category, " +
+           "COALESCE(SUM(a.hoursWorked), 0) as totalHours, " +
+           "COUNT(DISTINCT e.id) as eventCount, " +
+           "COUNT(DISTINCT app.volunteer.id) as volunteerCount " +
+           "FROM Attendance a " +
+           "JOIN a.application app " +
+           "JOIN app.event e " +
+           "WHERE a.hoursStatus = 'APPROVED' " +
+           "AND (:ngoId IS NULL OR e.ngo.id = :ngoId) " +
+           "GROUP BY e.category " +
+           "ORDER BY SUM(a.hoursWorked) DESC")
+    List<com.volunteerhub.dto.CategoryHoursProjection> findCategoryHours(@Param("ngoId") Long ngoId);
+
+    @Query("SELECT e.category as category, " +
+           "COALESCE(SUM(a.hoursWorked), 0) as totalHours, " +
+           "COUNT(DISTINCT e.id) as eventCount, " +
+           "COUNT(DISTINCT app.volunteer.id) as volunteerCount " +
+           "FROM Attendance a " +
+           "JOIN a.application app " +
+           "JOIN app.event e " +
+           "WHERE a.hoursStatus = 'APPROVED' " +
+           "AND app.volunteer.id = :volunteerId " +
+           "GROUP BY e.category " +
+           "ORDER BY SUM(a.hoursWorked) DESC")
+    List<com.volunteerhub.dto.CategoryHoursProjection> findCategoryHoursByVolunteerId(@Param("volunteerId") Long volunteerId);
+
+    @Query(value = "SELECT DATE_FORMAT(e.event_date, '%Y-%m') AS period, " +
+                   "DATE_FORMAT(e.event_date, '%b %Y') AS label, " +
+                   "COALESCE(SUM(a.hours_worked), 0) AS totalHours, " +
+                   "COUNT(DISTINCT e.id) AS eventCount, " +
+                   "COUNT(DISTINCT app.volunteer_id) AS volunteerCount " +
+                   "FROM attendance a " +
+                   "JOIN applications app ON a.application_id = app.id " +
+                   "JOIN events e ON app.event_id = e.id " +
+                   "WHERE a.hours_status = 'APPROVED' " +
+                   "AND (:ngoId IS NULL OR e.ngo_id = :ngoId) " +
+                   "GROUP BY period, label " +
+                   "ORDER BY period ASC", nativeQuery = true)
+    List<com.volunteerhub.dto.ActivityDataPointProjection> findMonthlyActivity(@Param("ngoId") Long ngoId);
+
+    @Query(value = "SELECT DATE_FORMAT(e.event_date, '%Y-W%u') AS period, " +
+                   "CONCAT('Week ', DATE_FORMAT(e.event_date, '%u, %Y')) AS label, " +
+                   "COALESCE(SUM(a.hours_worked), 0) AS totalHours, " +
+                   "COUNT(DISTINCT e.id) AS eventCount, " +
+                   "COUNT(DISTINCT app.volunteer_id) AS volunteerCount " +
+                   "FROM attendance a " +
+                   "JOIN applications app ON a.application_id = app.id " +
+                   "JOIN events e ON app.event_id = e.id " +
+                   "WHERE a.hours_status = 'APPROVED' " +
+                   "AND (:ngoId IS NULL OR e.ngo_id = :ngoId) " +
+                   "GROUP BY period, label " +
+                   "ORDER BY period ASC", nativeQuery = true)
+    List<com.volunteerhub.dto.ActivityDataPointProjection> findWeeklyActivity(@Param("ngoId") Long ngoId);
+
+    @Query(value = "SELECT DATE_FORMAT(e.event_date, '%Y-%m') AS period, " +
+                   "DATE_FORMAT(e.event_date, '%b %Y') AS label, " +
+                   "COALESCE(SUM(a.hours_worked), 0) AS totalHours, " +
+                   "COUNT(DISTINCT e.id) AS eventCount, " +
+                   "COUNT(DISTINCT app.volunteer_id) AS volunteerCount " +
+                   "FROM attendance a " +
+                   "JOIN applications app ON a.application_id = app.id " +
+                   "JOIN events e ON app.event_id = e.id " +
+                   "WHERE a.hours_status = 'APPROVED' " +
+                   "AND app.volunteer_id = :volunteerId " +
+                   "GROUP BY period, label " +
+                   "ORDER BY period ASC", nativeQuery = true)
+    List<com.volunteerhub.dto.ActivityDataPointProjection> findMonthlyActivityByVolunteerId(@Param("volunteerId") Long volunteerId);
 }

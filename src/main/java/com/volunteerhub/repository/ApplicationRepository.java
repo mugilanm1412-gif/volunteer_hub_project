@@ -71,4 +71,18 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
            "WHERE a.volunteer.id = :volunteerId")
     Page<Application> findAllVolunteerApplications(@Param("volunteerId") Long volunteerId,
                                                   Pageable pageable);
+
+    long countByVolunteerIdAndStatus(Long volunteerId, ApplicationStatus status);
+
+    long countByEventNgoId(Long ngoId);
+
+    long countByEventNgoIdAndStatus(Long ngoId, ApplicationStatus status);
+
+    @Query("SELECT a FROM Application a " +
+           "JOIN FETCH a.volunteer v " +
+           "JOIN FETCH a.event e " +
+           "WHERE a.status = 'APPROVED' " +
+           "AND e.status = 'PUBLISHED' " +
+           "AND e.eventDate = :eventDate")
+    List<Application> findApprovedApplicationsForEventDate(@Param("eventDate") LocalDate eventDate);
 }
