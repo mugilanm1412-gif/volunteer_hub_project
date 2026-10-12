@@ -44,7 +44,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND (:location IS NULL OR :location = '' OR LOWER(e.location) LIKE LOWER(CONCAT('%', :location, '%'))) " +
             "AND (:from IS NULL OR e.eventDate >= :from) " +
             "AND (:to IS NULL OR e.eventDate <= :to) " +
-            "AND (:q IS NULL OR :q = '' OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :q, '%')))")
+            "AND (:q IS NULL OR :q = '' OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+            "AND (:hasSlots IS NULL OR :hasSlots = false OR e.capacity > (SELECT COUNT(a) FROM Application a WHERE a.event = e AND a.status = 'APPROVED'))")
     Page<Event> searchEvents(
             @Param("status") EventStatus status,
             @Param("category") String category,
@@ -52,5 +53,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("from") LocalDate from,
             @Param("to") LocalDate to,
             @Param("q") String q,
+            @Param("hasSlots") Boolean hasSlots,
             Pageable pageable);
 }

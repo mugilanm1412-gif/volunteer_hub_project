@@ -2,9 +2,11 @@ package com.volunteerhub.repository;
 
 import com.volunteerhub.entity.Application;
 import com.volunteerhub.entity.ApplicationStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -18,6 +20,10 @@ import java.util.Optional;
  */
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Application a WHERE a.event.id = :eventId AND a.status = :status")
+    List<Application> findApprovedWithLock(@Param("eventId") Long eventId, @Param("status") ApplicationStatus status);
 
     boolean existsByVolunteerIdAndEventId(Long volunteerId, Long eventId);
 

@@ -271,12 +271,12 @@ public class EventService {
             from,
             to,
             (q != null && !q.trim().isEmpty()) ? q.trim() : null,
+            hasSlots,
             pageable
         );
 
         List<EventDto> dtos = page.getContent().stream()
             .map(e -> toDto(e, null))
-            .filter(dto -> !Boolean.TRUE.equals(hasSlots) || dto.getRemainingSlots() > 0)
             .collect(Collectors.toList());
 
         return new PageResponseDto<>(
