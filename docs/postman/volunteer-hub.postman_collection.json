@@ -1,0 +1,1154 @@
+{
+	"info": {
+		"_postman_id": "c85d852a-9e51-4f51-b8ef-827c81d29e71",
+		"name": "Volunteer Hub API",
+		"description": "Comprehensive Postman collection for the Volunteer Hub and Performance Tracking System. Covers authentication with session cookie management, automated CSRF token handling, and all endpoints for Volunteers, NGOs, and Platform Administrators.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Automatically extract XSRF-TOKEN cookie from jar and inject into xsrfToken variable",
+					"const xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+					"if (xsrfCookie) {",
+					"    pm.variables.set('xsrfToken', decodeURIComponent(xsrfCookie));",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Store CSRF token if Set-Cookie header contains XSRF-TOKEN",
+					"const xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+					"if (xsrfCookie) {",
+					"    pm.collectionVariables.set('xsrfToken', decodeURIComponent(xsrfCookie));",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "xsrfToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "volunteerEmail",
+			"value": "alice@example.com",
+			"type": "string"
+		},
+		{
+			"key": "volunteerPassword",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "ngoEmail",
+			"value": "contact@greenearth.org",
+			"type": "string"
+		},
+		{
+			"key": "ngoPassword",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "adminEmail",
+			"value": "admin@volunteerhub.org",
+			"type": "string"
+		},
+		{
+			"key": "adminPassword",
+			"value": "admin123",
+			"type": "string"
+		},
+		{
+			"key": "activeEventId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "activeApplicationId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "activeAttendanceId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "activeCertificateId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01 Health & Discovery",
+			"item": [
+				{
+					"name": "System Health Check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "health"]
+						},
+						"description": "Returns application status, database connectivity, Flyway migration version, and JVM memory statistics."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02 Authentication",
+			"item": [
+				{
+					"name": "Login as Volunteer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+									"if (xsrfCookie) {",
+									"    pm.collectionVariables.set('xsrfToken', decodeURIComponent(xsrfCookie));",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{volunteerEmail}}\",\n    \"password\": \"{{volunteerPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login as NGO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+									"if (xsrfCookie) {",
+									"    pm.collectionVariables.set('xsrfToken', decodeURIComponent(xsrfCookie));",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{ngoEmail}}\",\n    \"password\": \"{{ngoPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+									"if (xsrfCookie) {",
+									"    pm.collectionVariables.set('xsrfToken', decodeURIComponent(xsrfCookie));",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User (/api/users/me)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "me"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Volunteer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"new_vol_{{$timestamp}}@example.com\",\n    \"password\": \"Password@123\",\n    \"fullName\": \"Postman Test Volunteer\",\n    \"phone\": \"555-0123\",\n    \"city\": \"San Francisco\",\n    \"skills\": \"First Aid, Logistics\",\n    \"interests\": \"Environment, Disaster Relief\",\n    \"bio\": \"Passionate community helper\",\n    \"showOnLeaderboard\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register/volunteer",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register", "volunteer"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register NGO",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"new_ngo_{{$timestamp}}@example.org\",\n    \"password\": \"Password@123\",\n    \"name\": \"Postman Ocean Conservancy\",\n    \"category\": \"Environment\",\n    \"description\": \"Dedicated to clean oceans and marine safety.\",\n    \"registrationNumber\": \"NGO-PM-{{$timestamp}}\",\n    \"contactPerson\": \"Sarah Jenkins\",\n    \"contactPhone\": \"555-0987\",\n    \"address\": \"789 Harbor Blvd\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register/ngo",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register", "ngo"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"alice@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "forgot-password"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"currentPassword\": \"password123\",\n    \"newPassword\": \"NewPassword@2026\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me/change-password",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "me", "change-password"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "logout"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03 Profiles",
+			"item": [
+				{
+					"name": "Get Volunteer Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Volunteer Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"Alice Smith\",\n    \"phone\": \"555-0101\",\n    \"city\": \"Greenwood\",\n    \"skills\": \"Tree Planting, Recycling, First Aid\",\n    \"interests\": \"Environment, Sustainability\",\n    \"bio\": \"Committed to green initiatives and community leadership.\",\n    \"showOnLeaderboard\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get NGO Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/ngos/me/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ngos", "me", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update NGO Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Green Earth Foundation\",\n    \"category\": \"Environment\",\n    \"description\": \"Fostering tree plantation and climate resilience across urban districts.\",\n    \"contactPerson\": \"Sarah Jenkins\",\n    \"contactPhone\": \"555-0199\",\n    \"address\": \"123 Green Way, Sector 4\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ngos/me/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ngos", "me", "profile"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04 Events",
+			"item": [
+				{
+					"name": "Search & Browse Events (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/events?page=0&size=10&status=PUBLISHED",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "PUBLISHED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event Details by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/events/{{activeEventId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "{{activeEventId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO Create Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Riverfront Restoration Drive\",\n    \"description\": \"Community river cleanup removing debris and planting native bank vegetation.\",\n    \"category\": \"Environment\",\n    \"location\": \"City Riverfront, Pier 3\",\n    \"eventDate\": \"2026-11-20\",\n    \"startTime\": \"09:00:00\",\n    \"endTime\": \"13:00:00\",\n    \"requiredSkills\": \"Teamwork, Waste Sorting\",\n    \"capacity\": 25\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/events",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO List My Hosted Events",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/events/mine?page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "mine"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO Complete Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/events/{{activeEventId}}/complete",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "{{activeEventId}}", "complete"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05 Applications & Overbooking",
+			"item": [
+				{
+					"name": "Volunteer Apply for Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/events/{{activeEventId}}/applications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "{{activeEventId}}", "applications"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Get My Applications (My Events)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/applications?tab=upcoming",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "applications"],
+							"query": [
+								{
+									"key": "tab",
+									"value": "upcoming"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO List Applications for Event",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/events/{{activeEventId}}/applications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "{{activeEventId}}", "applications"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO Update Application Status (Approve/Reject)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"APPROVED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/{{activeApplicationId}}/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "applications", "{{activeApplicationId}}", "status"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Cancel Application",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/applications/{{activeApplicationId}}/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "applications", "{{activeApplicationId}}", "cancel"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06 Attendance & Hours Approval",
+			"item": [
+				{
+					"name": "NGO Submit Batch Attendance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"records\": [\n        {\n            \"applicationId\": 1,\n            \"status\": \"PRESENT\",\n            \"hoursWorked\": 4.0\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/events/{{activeEventId}}/attendance",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "{{activeEventId}}", "attendance"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO List Attendance Records for Event",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/events/{{activeEventId}}/attendance",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "events", "{{activeEventId}}", "attendance"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO Review & Approve Hours",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hoursStatus\": \"APPROVED\",\n    \"rejectionReason\": null\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/attendance/{{activeAttendanceId}}/approval",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "attendance", "{{activeAttendanceId}}", "approval"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Get My Verified Attendance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendance/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "attendance", "me"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07 Ratings & Performance",
+			"item": [
+				{
+					"name": "NGO Submit Volunteer Rating",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"attendanceId\": {{activeAttendanceId}},\n    \"punctuality\": 5,\n    \"teamwork\": 5,\n    \"effort\": 4,\n    \"comment\": \"Exceptional reliability and enthusiasm during the drive!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ratings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ratings"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Fetch My Performance Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/performance",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "performance"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Fetch Progress Time Series",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/performance/progress?granularity=month",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "performance", "progress"],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "month"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Toggle Leaderboard Visibility",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"showOnLeaderboard\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/leaderboard-visibility",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "leaderboard-visibility"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Volunteer Download Performance Report (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/volunteers/me/performance/report.pdf",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "volunteers", "me", "performance", "report.pdf"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Public Leaderboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/leaderboard?page=0&size=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "leaderboard"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "08 Certificates",
+			"item": [
+				{
+					"name": "Volunteer List My Certificates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/certificates/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "certificates", "me"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download Certificate PDF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/certificates/{{activeCertificateId}}/download",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "certificates", "{{activeCertificateId}}", "download"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "09 Dashboards & Reports",
+			"item": [
+				{
+					"name": "Volunteer Dashboard Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard/volunteer",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dashboard", "volunteer"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NGO Impact Dashboard Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard/ngo",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dashboard", "ngo"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Platform Dashboard Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard/admin",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dashboard", "admin"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hours by Category Aggregation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/hours-by-category",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "hours-by-category"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activity Timeline Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/activity?granularity=month",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "activity"],
+							"query": [
+								{
+									"key": "granularity",
+									"value": "month"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "10 Admin Platform Governance",
+			"item": [
+				{
+					"name": "Admin List All NGOs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/ngos",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "ngos"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Verify NGO",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"APPROVE\",\n    \"reason\": null\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/ngos/1/verification",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "ngos", "1", "verification"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Search Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/users?query=alice",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "users"],
+							"query": [
+								{
+									"key": "query",
+									"value": "alice"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin View Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/audit-logs?page=0&size=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "audit-logs"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Trigger Event Reminders",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/reminders/trigger",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "reminders", "trigger"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "11 Notifications",
+			"item": [
+				{
+					"name": "List My Notifications",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications?page=0&size=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Notification Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/unread-count",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "unread-count"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/1/read",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "1", "read"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All Notifications as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "{{xsrfToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/read-all",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "read-all"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
