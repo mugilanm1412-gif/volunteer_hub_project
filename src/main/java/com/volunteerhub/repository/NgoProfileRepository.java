@@ -19,4 +19,6 @@ public interface NgoProfileRepository extends JpaRepository<NgoProfile, Long> {
     boolean existsByRegistrationNumber(String registrationNumber);
 
     java.util.List<NgoProfile> findByVerificationStatus(com.volunteerhub.entity.NgoVerificationStatus verificationStatus);
+
+    long countByVerificationStatus(com.volunteerhub.entity.NgoVerificationStatus verificationStatus);
 }

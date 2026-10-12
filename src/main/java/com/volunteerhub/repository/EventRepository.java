@@ -55,4 +55,14 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("q") String q,
             @Param("hasSlots") Boolean hasSlots,
             Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE " +
+           "(:status IS NULL OR e.status = :status) AND " +
+           "(:q IS NULL OR :q = '' OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(e.location) LIKE LOWER(CONCAT('%', :q, '%')))")
+    Page<Event> searchAdminEvents(
+           @Param("status") EventStatus status,
+           @Param("q") String q,
+           Pageable pageable);
+
+    long countByStatus(EventStatus status);
 }

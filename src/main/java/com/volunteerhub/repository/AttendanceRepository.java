@@ -57,4 +57,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
            "LEFT JOIN FETCH e.ngo ngo " +
            "WHERE a.id = :id")
     Optional<Attendance> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT COALESCE(SUM(a.hoursWorked), 0) FROM Attendance a WHERE a.hoursStatus = 'APPROVED'")
+    java.math.BigDecimal sumTotalVerifiedHours();
 }

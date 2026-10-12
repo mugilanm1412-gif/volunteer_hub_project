@@ -3,10 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin NGO Verification - Volunteer Hub</title>
+  <title>Admin Command Center - Volunteer Hub</title>
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/components.css">
+  <style>
+    /* Admin specific layout enhancements */
+    .admin-nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--neutral-200);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .admin-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border: none;
+      background: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--neutral-600);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .admin-tab-btn:hover {
+      color: var(--primary-700);
+      background-color: var(--primary-50);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .admin-tab-btn.active {
+      color: var(--primary-700);
+      border-bottom-color: var(--primary-700);
+      font-weight: 700;
+    }
+
+    .admin-tab-btn .tab-count {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background-color: var(--neutral-200);
+      color: var(--neutral-700);
+    }
+
+    .admin-tab-btn.active .tab-count {
+      background-color: var(--primary-100);
+      color: var(--primary-800);
+    }
+
+    /* Stat cards grid */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .admin-stat-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .admin-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .admin-stat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .admin-stat-label {
+      font-size: 0.8rem;
+      color: var(--neutral-500);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .admin-stat-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--neutral-900);
+      margin: 0.25rem 0;
+    }
+
+    .admin-stat-subtext {
+      font-size: 0.8rem;
+      color: var(--neutral-500);
+    }
+
+    /* Filter & Controls Toolbar */
+    .toolbar-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      background-color: var(--neutral-50);
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--neutral-200);
+    }
+
+    .toolbar-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      flex: 1;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      min-width: 240px;
+      flex: 1;
+      max-width: 360px;
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--neutral-200);
+      background-color: #ffffff;
+      font-size: 0.875rem;
+    }
+
+    .badge-admin {
+      background-color: #f3e8ff;
+      color: #6b21a8;
+      border: 1px solid #d8b4fe;
+    }
+
+    .badge-ngo {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    .badge-volunteer {
+      background-color: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-select {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--neutral-300);
+      background-color: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .status-select.status-ACTIVE {
+      color: #15803d;
+      border-color: #86efac;
+    }
+
+    .status-select.status-SUSPENDED {
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    .status-select.status-DEACTIVATED {
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+  </style>
 </head>
 <body>
   <!-- Dynamic Navigation Bar -->
@@ -15,44 +200,181 @@
   <main class="main-content">
     <div class="page-header">
       <div>
-        <h1>NGO Verification & Governance</h1>
-        <p>Review organization registration credentials and grant event publishing privileges</p>
+        <h1>Administration & Platform Governance</h1>
+        <p>Oversee users, verify organizations, moderate event listings, and inspect system audit trails</p>
       </div>
       <div>
-        <a href="/events.html" class="btn btn-secondary btn-sm">View All Events</a>
+        <a href="/events.html" class="btn btn-secondary btn-sm">Public Directory</a>
       </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="tabs-nav">
-      <button class="tab-btn active" data-status="PENDING" onclick="filterStatus('PENDING')">
-        Pending Verification
+    <!-- Main Navigation Tabs -->
+    <div class="admin-nav-tabs">
+      <button class="admin-tab-btn active" id="tab-btn-overview" onclick="switchMainTab('overview')">
+        📊 Overview
       </button>
-      <button class="tab-btn" data-status="VERIFIED" onclick="filterStatus('VERIFIED')">
-        Verified Organizations
+      <button class="admin-tab-btn" id="tab-btn-ngos" onclick="switchMainTab('ngos')">
+        🏢 NGO Verification <span class="tab-count" id="pending-ngo-badge">...</span>
       </button>
-      <button class="tab-btn" data-status="REJECTED" onclick="filterStatus('REJECTED')">
-        Declined Applications
+      <button class="admin-tab-btn" id="tab-btn-users" onclick="switchMainTab('users')">
+        👥 User Management
       </button>
-      <button class="tab-btn" data-status="" onclick="filterStatus('')">
-        All NGOs
+      <button class="admin-tab-btn" id="tab-btn-events" onclick="switchMainTab('events')">
+        📅 Event Governance
+      </button>
+      <button class="admin-tab-btn" id="tab-btn-audit" onclick="switchMainTab('audit')">
+        📜 Audit Trail
       </button>
     </div>
 
-    <!-- NGOs Table / Card List -->
-    <div class="card">
-      <div class="card-body" style="padding: 0;">
-        <div id="ngos-table-container" class="table-responsive">
-          <div style="text-align: center; padding: 3rem;">
-            <span class="spinner" style="border-top-color: var(--primary-700);"></span>
-            <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading organizations...</p>
+    <!-- TAB 1: Platform Overview -->
+    <section id="section-overview" class="admin-section">
+      <div id="stats-container">
+        <div style="text-align: center; padding: 3rem;">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+          <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading platform telemetry...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: NGO Verification -->
+    <section id="section-ngos" class="admin-section" style="display: none;">
+      <!-- Filter Subtabs -->
+      <div class="tabs-nav" style="margin-bottom: 1rem;">
+        <button class="tab-btn active" data-ngo-status="PENDING" onclick="filterNgoStatus('PENDING')">
+          Pending Verification
+        </button>
+        <button class="tab-btn" data-ngo-status="VERIFIED" onclick="filterNgoStatus('VERIFIED')">
+          Verified Organizations
+        </button>
+        <button class="tab-btn" data-ngo-status="REJECTED" onclick="filterNgoStatus('REJECTED')">
+          Declined Applications
+        </button>
+        <button class="tab-btn" data-ngo-status="" onclick="filterNgoStatus('')">
+          All Organizations
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding: 0;">
+          <div id="ngos-table-container" class="table-responsive">
+            <div style="text-align: center; padding: 3rem;">
+              <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading organizations...</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- TAB 3: User Management -->
+    <section id="section-users" class="admin-section" style="display: none;">
+      <div class="toolbar-filter">
+        <div class="toolbar-inputs">
+          <div class="search-input-wrap">
+            <input type="text" id="user-search" class="form-control" placeholder="Search by name or email..."
+                   onkeydown="if(event.key==='Enter') searchUsers(0)">
+          </div>
+          <select id="user-role-filter" class="form-select" style="width: auto;" onchange="searchUsers(0)">
+            <option value="">All Roles</option>
+            <option value="VOLUNTEER">Volunteers</option>
+            <option value="NGO">NGOs</option>
+            <option value="ADMIN">Administrators</option>
+          </select>
+          <select id="user-status-filter" class="form-select" style="width: auto;" onchange="searchUsers(0)">
+            <option value="">All Account Statuses</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="SUSPENDED">SUSPENDED</option>
+            <option value="DEACTIVATED">DEACTIVATED</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="searchUsers(0)">Search</button>
+          <button class="btn btn-outline btn-sm" onclick="resetUserFilters()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding: 0;">
+          <div id="users-table-container" class="table-responsive">
+            <div style="text-align: center; padding: 3rem;">
+              <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading users...</p>
+            </div>
+          </div>
+          <div id="users-pagination" class="pagination-bar" style="display: none;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Event Governance -->
+    <section id="section-events" class="admin-section" style="display: none;">
+      <div class="toolbar-filter">
+        <div class="toolbar-inputs">
+          <div class="search-input-wrap">
+            <input type="text" id="event-search" class="form-control" placeholder="Search event title..."
+                   onkeydown="if(event.key==='Enter') searchEvents(0)">
+          </div>
+          <select id="event-status-filter" class="form-select" style="width: auto;" onchange="searchEvents(0)">
+            <option value="">All Statuses</option>
+            <option value="PUBLISHED">PUBLISHED</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="CANCELLED">CANCELLED</option>
+            <option value="REMOVED">REMOVED</option>
+            <option value="DRAFT">DRAFT</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="searchEvents(0)">Search</button>
+          <button class="btn btn-outline btn-sm" onclick="resetEventFilters()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding: 0;">
+          <div id="events-table-container" class="table-responsive">
+            <div style="text-align: center; padding: 3rem;">
+              <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading events...</p>
+            </div>
+          </div>
+          <div id="events-pagination" class="pagination-bar" style="display: none;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Audit Trail -->
+    <section id="section-audit" class="admin-section" style="display: none;">
+      <div class="toolbar-filter">
+        <div class="toolbar-inputs">
+          <div class="search-input-wrap">
+            <input type="text" id="audit-action-filter" class="form-control" placeholder="Filter by action (e.g. EVENT_REMOVED)..."
+                   onkeydown="if(event.key==='Enter') searchAuditLogs(0)">
+          </div>
+          <select id="audit-entity-filter" class="form-select" style="width: auto;" onchange="searchAuditLogs(0)">
+            <option value="">All Entity Types</option>
+            <option value="USER">USER</option>
+            <option value="EVENT">EVENT</option>
+            <option value="NGO">NGO</option>
+            <option value="ATTENDANCE">ATTENDANCE</option>
+            <option value="CERTIFICATE">CERTIFICATE</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="searchAuditLogs(0)">Filter</button>
+          <button class="btn btn-outline btn-sm" onclick="resetAuditFilters()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding: 0;">
+          <div id="audit-table-container" class="table-responsive">
+            <div style="text-align: center; padding: 3rem;">
+              <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading audit logs...</p>
+            </div>
+          </div>
+          <div id="audit-pagination" class="pagination-bar" style="display: none;"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Rejection Modal -->
+  <!-- NGO Rejection Modal -->
   <div id="reject-modal" class="modal-backdrop">
     <div class="modal-dialog">
       <div class="modal-header">
@@ -76,6 +398,33 @@
     </div>
   </div>
 
+  <!-- Event Removal Modal -->
+  <div id="remove-event-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="color: #dc2626;">Remove Event from Platform</h3>
+        <button type="button" class="modal-close-btn" onclick="closeRemoveEventModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" style="margin-bottom: 1rem;">
+          <strong>Warning:</strong> Soft-removing this event will immediately change its status to <code>REMOVED</code>, prevent any further sign-ups, dispatch in-app cancellation notifications to all registered volunteers and the host NGO, and record an audit log entry.
+        </div>
+        <p style="color: var(--neutral-700); margin-bottom: 0.5rem;">
+          Target Event: <strong id="remove-event-title-display"></strong> (ID: <span id="remove-event-id-display"></span>)
+        </p>
+        <div class="form-group">
+          <label class="form-label required" for="remove-event-reason">Reason for Removal</label>
+          <textarea id="remove-event-reason" class="form-control" rows="3" required
+                    placeholder="e.g. Inappropriate content, violation of platform terms, inaccurate event information..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeRemoveEventModal()">Cancel</button>
+        <button type="button" id="btn-confirm-remove-event" class="btn btn-danger btn-sm">Remove Event</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="app-footer">
     <div class="footer-content">
       <p style="margin: 0; font-weight: 600;">Volunteer Hub &bull; Empowering Verified Impact</p>
@@ -85,13 +434,30 @@
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
   <script>
-    let currentFilter = 'PENDING';
+    let currentAdmin = null;
+    let activeMainTab = 'overview';
+
+    // State for NGO verification
+    let currentNgoFilter = 'PENDING';
     let targetNgoId = null;
+
+    // State for User Management
+    let userPage = 0;
+    const userPageSize = 10;
+
+    // State for Event Moderation
+    let eventPage = 0;
+    const eventPageSize = 10;
+    let targetRemoveEventId = null;
+
+    // State for Audit Trail
+    let auditPage = 0;
+    const auditPageSize = 15;
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        const user = await apiFetch('/api/users/me');
-        if (user.role !== 'ADMIN') {
+        currentAdmin = await apiFetch('/api/users/me');
+        if (currentAdmin.role !== 'ADMIN') {
           showNotAdmin();
           return;
         }
@@ -100,25 +466,191 @@
         return;
       }
 
-      loadNgos(currentFilter);
+      // Initial tab load
+      loadOverviewStats();
     });
 
     function showNotAdmin() {
-      const container = document.getElementById('ngos-table-container');
-      container.innerHTML = `
-        <div class="empty-state">
+      document.querySelector('main').innerHTML = `
+        <div class="empty-state" style="padding: 4rem 1rem;">
           <div class="empty-state-icon">🛡️</div>
-          <h3>Administrator Clearance Required</h3>
-          <p>This verification console is restricted to authorized platform administrators.</p>
+          <h2>Administrator Clearance Required</h2>
+          <p>This console is restricted to verified system administrators.</p>
           <a href="/login.html" class="btn btn-primary" style="margin-top: 1rem;">Log In as Administrator</a>
         </div>
       `;
     }
 
-    function filterStatus(status) {
-      currentFilter = status;
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.status === status);
+    function switchMainTab(tabId) {
+      activeMainTab = tabId;
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.querySelectorAll('.admin-section').forEach(sec => sec.style.display = 'none');
+      const activeSection = document.getElementById(`section-${tabId}`);
+      if (activeSection) activeSection.style.display = 'block';
+
+      if (tabId === 'overview') {
+        loadOverviewStats();
+      } else if (tabId === 'ngos') {
+        loadNgos(currentNgoFilter);
+      } else if (tabId === 'users') {
+        searchUsers(userPage);
+      } else if (tabId === 'events') {
+        searchEvents(eventPage);
+      } else if (tabId === 'audit') {
+        searchAuditLogs(auditPage);
+      }
+    }
+
+    // ==========================================
+    // 1. OVERVIEW STATS
+    // ==========================================
+    async function loadOverviewStats() {
+      const container = document.getElementById('stats-container');
+      try {
+        const stats = await apiFetch('/api/admin/stats');
+        
+        // Update pending NGO badge in tab header
+        const pendingBadge = document.getElementById('pending-ngo-badge');
+        if (pendingBadge) {
+          pendingBadge.textContent = stats.pendingNgoVerifications || 0;
+          if (stats.pendingNgoVerifications > 0) {
+            pendingBadge.style.backgroundColor = '#fed7aa';
+            pendingBadge.style.color = '#c2410c';
+          }
+        }
+
+        container.innerHTML = `
+          <!-- KPI Overview Grid -->
+          <div class="overview-grid">
+            <div class="admin-stat-card">
+              <div>
+                <div class="admin-stat-icon">👥</div>
+                <div class="admin-stat-label">Total Platform Users</div>
+                <div class="admin-stat-value">${(stats.totalUsers || 0).toLocaleString()}</div>
+              </div>
+              <div class="admin-stat-subtext">
+                Active: <strong>${stats.activeUsers || 0}</strong> &bull; Suspended: <strong>${stats.suspendedUsers || 0}</strong>
+              </div>
+            </div>
+
+            <div class="admin-stat-card">
+              <div>
+                <div class="admin-stat-icon">🌟</div>
+                <div class="admin-stat-label">User Distribution</div>
+                <div class="admin-stat-value" style="font-size: 1.35rem; font-weight: 600;">
+                  ${stats.totalVolunteers || 0} Vol / ${stats.totalNgos || 0} NGO
+                </div>
+              </div>
+              <div class="admin-stat-subtext">
+                Platform Administrators: <strong>${stats.totalAdmins || 0}</strong>
+              </div>
+            </div>
+
+            <div class="admin-stat-card">
+              <div>
+                <div class="admin-stat-icon">📅</div>
+                <div class="admin-stat-label">Events Hosted</div>
+                <div class="admin-stat-value">${(stats.totalEvents || 0).toLocaleString()}</div>
+              </div>
+              <div class="admin-stat-subtext">
+                Published: <strong>${stats.publishedEvents || 0}</strong> &bull; Completed: <strong>${stats.completedEvents || 0}</strong>
+              </div>
+            </div>
+
+            <div class="admin-stat-card">
+              <div>
+                <div class="admin-stat-icon">⏱️</div>
+                <div class="admin-stat-label">Total Verified Hours</div>
+                <div class="admin-stat-value" style="color: var(--primary-700);">${(stats.totalVerifiedHours || 0).toLocaleString()} hrs</div>
+              </div>
+              <div class="admin-stat-subtext">
+                Impact across communities
+              </div>
+            </div>
+
+            <div class="admin-stat-card">
+              <div>
+                <div class="admin-stat-icon">📜</div>
+                <div class="admin-stat-label">Certificates Issued</div>
+                <div class="admin-stat-value" style="color: #6366f1;">${(stats.totalCertificatesIssued || 0).toLocaleString()}</div>
+              </div>
+              <div class="admin-stat-subtext">
+                Digitally verified credentials
+              </div>
+            </div>
+
+            <div class="admin-stat-card">
+              <div>
+                <div class="admin-stat-icon">🏢</div>
+                <div class="admin-stat-label">Pending NGO Reviews</div>
+                <div class="admin-stat-value" style="color: ${stats.pendingNgoVerifications > 0 ? '#ea580c' : '#15803d'};">
+                  ${stats.pendingNgoVerifications || 0}
+                </div>
+              </div>
+              <div class="admin-stat-subtext">
+                ${stats.pendingNgoVerifications > 0 ? 'Requires administrative review' : 'All organizations reviewed'}
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Panels -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3 style="margin: 0; font-size: 1.1rem;">⚡ Governance Shortcuts</h3>
+              </div>
+              <div class="card-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button class="btn btn-outline" style="text-align: left; justify-content: flex-start;" onclick="switchMainTab('ngos')">
+                  🏢 Review Pending NGO Applications (${stats.pendingNgoVerifications || 0})
+                </button>
+                <button class="btn btn-outline" style="text-align: left; justify-content: flex-start;" onclick="switchMainTab('users')">
+                  👥 Audit & Manage Users (${stats.totalUsers || 0})
+                </button>
+                <button class="btn btn-outline" style="text-align: left; justify-content: flex-start;" onclick="switchMainTab('events')">
+                  📅 Moderate Platform Events (${stats.totalEvents || 0})
+                </button>
+                <button class="btn btn-outline" style="text-align: left; justify-content: flex-start;" onclick="switchMainTab('audit')">
+                  📜 Review Security Audit Trail
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 style="margin: 0; font-size: 1.1rem;">🛡️ Platform Integrity Summary</h3>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 0.9rem; color: var(--neutral-600); margin-bottom: 0.75rem;">
+                  Moderation policies currently active:
+                </p>
+                <ul style="font-size: 0.85rem; color: var(--neutral-700); padding-left: 1.25rem; line-height: 1.6;">
+                  <li>Suspended or deactivated accounts are rejected automatically during authentication attempts.</li>
+                  <li>Soft-removed events trigger in-app cancellation notices for all registered volunteers.</li>
+                  <li>All administrative actions are permanently stored in the audit trail.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `
+          <div class="alert alert-danger">
+            Failed to load platform overview telemetry: ${escapeHtml(err.message)}
+          </div>
+        `;
+      }
+    }
+
+    // ==========================================
+    // 2. NGO VERIFICATION
+    // ==========================================
+    function filterNgoStatus(status) {
+      currentNgoFilter = status;
+      document.querySelectorAll('[data-ngo-status]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.ngoStatus === status);
       });
       loadNgos(status);
     }
@@ -239,7 +771,8 @@
           }
         });
         showToast('NGO organization verified successfully!', 'success');
-        loadNgos(currentFilter);
+        loadNgos(currentNgoFilter);
+        loadOverviewStats();
       } catch (err) {
         showToast(err.message || 'Failed to verify NGO', 'danger');
       }
@@ -273,11 +806,465 @@
         });
         closeRejectModal();
         showToast('NGO application declined', 'info');
-        loadNgos(currentFilter);
+        loadNgos(currentNgoFilter);
+        loadOverviewStats();
       } catch (err) {
         showToast(err.message || 'Failed to update NGO status', 'danger');
       }
     });
+
+    // ==========================================
+    // 3. USER MANAGEMENT
+    // ==========================================
+    function resetUserFilters() {
+      document.getElementById('user-search').value = '';
+      document.getElementById('user-role-filter').value = '';
+      document.getElementById('user-status-filter').value = '';
+      searchUsers(0);
+    }
+
+    async function searchUsers(page = 0) {
+      userPage = page;
+      const search = document.getElementById('user-search').value.trim();
+      const role = document.getElementById('user-role-filter').value;
+      const status = document.getElementById('user-status-filter').value;
+      const container = document.getElementById('users-table-container');
+      const pagContainer = document.getElementById('users-pagination');
+
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+          <p style="margin-top: 0.5rem; color: var(--neutral-500);">Querying user directory...</p>
+        </div>
+      `;
+
+      try {
+        const params = new URLSearchParams({
+          page: userPage,
+          size: userPageSize
+        });
+        if (search) params.append('query', search);
+        if (role) params.append('role', role);
+        if (status) params.append('status', status);
+
+        const data = await apiFetch(`/api/admin/users?${params.toString()}`);
+        const users = data.content || [];
+
+        if (users.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">👥</div>
+              <h3>No Users Found</h3>
+              <p>No user records matched your search parameters.</p>
+            </div>
+          `;
+          pagContainer.style.display = 'none';
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User Details</th>
+                <th>Role</th>
+                <th>Account Status</th>
+                <th>Registered</th>
+                <th style="text-align: right;">Governance Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users.map(u => {
+                const isSelf = currentAdmin && currentAdmin.id === u.id;
+                let roleBadgeClass = 'badge-volunteer';
+                if (u.role === 'ADMIN') roleBadgeClass = 'badge-admin';
+                else if (u.role === 'NGO') roleBadgeClass = 'badge-ngo';
+
+                let statusBadge = 'badge-success';
+                if (u.status === 'SUSPENDED') statusBadge = 'badge-warning';
+                else if (u.status === 'DEACTIVATED') statusBadge = 'badge-danger';
+
+                const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A';
+
+                return `
+                  <tr>
+                    <td><span style="font-family: monospace; color: var(--neutral-500);">#${u.id}</span></td>
+                    <td>
+                      <div style="font-weight: 600; color: var(--neutral-900);">${escapeHtml(u.name || 'Unnamed')}</div>
+                      <div style="font-size: 0.85rem; color: var(--neutral-500);">${escapeHtml(u.email)}</div>
+                    </td>
+                    <td>
+                      <span class="badge ${roleBadgeClass}">${u.role}</span>
+                    </td>
+                    <td>
+                      <span class="badge ${statusBadge}">${u.status}</span>
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--neutral-600);">
+                      ${createdDate}
+                    </td>
+                    <td style="text-align: right;">
+                      ${isSelf ? `
+                        <span style="font-size: 0.8rem; color: var(--neutral-400); font-style: italic;">
+                          (Your Account)
+                        </span>
+                      ` : `
+                        <select class="status-select status-${u.status}" onchange="changeUserStatus(${u.id}, this.value, '${u.status}')">
+                          <option value="ACTIVE" ${u.status === 'ACTIVE' ? 'selected' : ''}>Active</option>
+                          <option value="SUSPENDED" ${u.status === 'SUSPENDED' ? 'selected' : ''}>Suspended</option>
+                          <option value="DEACTIVATED" ${u.status === 'DEACTIVATED' ? 'selected' : ''}>Deactivated</option>
+                        </select>
+                      `}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+
+        renderPagination(pagContainer, data, searchUsers);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="alert alert-danger" style="margin: 1.5rem;">
+            Failed to query user records: ${escapeHtml(err.message)}
+          </div>
+        `;
+        pagContainer.style.display = 'none';
+      }
+    }
+
+    async function changeUserStatus(userId, newStatus, currentStatus) {
+      if (!confirm(`Are you sure you want to change user #${userId} status to ${newStatus}?`)) {
+        searchUsers(userPage); // Revert select value
+        return;
+      }
+
+      try {
+        await apiFetch(`/api/admin/users/${userId}/status`, {
+          method: 'PATCH',
+          body: {
+            status: newStatus
+          }
+        });
+        showToast(`User #${userId} status updated to ${newStatus}`, 'success');
+        searchUsers(userPage);
+        loadOverviewStats();
+      } catch (err) {
+        showToast(err.message || 'Failed to update user status', 'danger');
+        searchUsers(userPage);
+      }
+    }
+
+    // ==========================================
+    // 4. EVENT GOVERNANCE & REMOVAL
+    // ==========================================
+    function resetEventFilters() {
+      document.getElementById('event-search').value = '';
+      document.getElementById('event-status-filter').value = '';
+      searchEvents(0);
+    }
+
+    async function searchEvents(page = 0) {
+      eventPage = page;
+      const search = document.getElementById('event-search').value.trim();
+      const status = document.getElementById('event-status-filter').value;
+      const container = document.getElementById('events-table-container');
+      const pagContainer = document.getElementById('events-pagination');
+
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+          <p style="margin-top: 0.5rem; color: var(--neutral-500);">Querying event registry...</p>
+        </div>
+      `;
+
+      try {
+        const params = new URLSearchParams({
+          page: eventPage,
+          size: eventPageSize
+        });
+        if (search) params.append('query', search);
+        if (status) params.append('status', status);
+
+        const data = await apiFetch(`/api/admin/events?${params.toString()}`);
+        const events = data.content || [];
+
+        if (events.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📅</div>
+              <h3>No Events Found</h3>
+              <p>No events matched your search parameters.</p>
+            </div>
+          `;
+          pagContainer.style.display = 'none';
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Event Title & Host</th>
+                <th>Category</th>
+                <th>Schedule</th>
+                <th>Signups</th>
+                <th>Status</th>
+                <th style="text-align: right;">Moderation</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${events.map(ev => {
+                let statusBadge = 'badge-neutral';
+                if (ev.status === 'PUBLISHED') statusBadge = 'badge-success';
+                else if (ev.status === 'COMPLETED') statusBadge = 'badge-info';
+                else if (ev.status === 'CANCELLED') statusBadge = 'badge-warning';
+                else if (ev.status === 'REMOVED') statusBadge = 'badge-danger';
+
+                return `
+                  <tr>
+                    <td><span style="font-family: monospace; color: var(--neutral-500);">#${ev.id}</span></td>
+                    <td>
+                      <div style="font-weight: 600; color: var(--neutral-900);">
+                        <a href="/event-details.html?id=${ev.id}" target="_blank" style="color: inherit; text-decoration: underline;">
+                          ${escapeHtml(ev.title)}
+                        </a>
+                      </div>
+                      <div style="font-size: 0.85rem; color: var(--neutral-500);">
+                        Host: ${escapeHtml(ev.ngoName || 'NGO')} &bull; ${escapeHtml(ev.location || '')}
+                      </div>
+                      ${ev.removedReason ? `
+                        <div style="font-size: 0.75rem; color: #dc2626; margin-top: 0.25rem;">
+                          <strong>Removal Reason:</strong> ${escapeHtml(ev.removedReason)}
+                        </div>
+                      ` : ''}
+                    </td>
+                    <td>
+                      <span class="badge badge-info">${escapeHtml(ev.category || 'General')}</span>
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--neutral-700);">
+                      ${escapeHtml(ev.eventDate || '')}<br>
+                      <span style="font-size: 0.75rem; color: var(--neutral-500);">${escapeHtml(ev.startTime || '')} - ${escapeHtml(ev.endTime || '')}</span>
+                    </td>
+                    <td style="font-size: 0.85rem;">
+                      <strong>${ev.approvedCount != null ? ev.approvedCount : (ev.registeredCount || 0)}</strong> / ${ev.capacity || '∞'}
+                    </td>
+                    <td>
+                      <span class="badge ${statusBadge}">${ev.status}</span>
+                    </td>
+                    <td style="text-align: right;">
+                      ${ev.status !== 'REMOVED' ? `
+                        <button class="btn btn-danger btn-sm" onclick="openRemoveEventModal(${ev.id}, '${escapeHtml(ev.title.replace(/'/g, "\\'"))}')">
+                          🗑️ Remove
+                        </button>
+                      ` : `
+                        <span style="font-size: 0.8rem; color: #dc2626; font-weight: 600;">REMOVED</span>
+                      `}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+
+        renderPagination(pagContainer, data, searchEvents);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="alert alert-danger" style="margin: 1.5rem;">
+            Failed to query event listings: ${escapeHtml(err.message)}
+          </div>
+        `;
+        pagContainer.style.display = 'none';
+      }
+    }
+
+    function openRemoveEventModal(id, title) {
+      targetRemoveEventId = id;
+      document.getElementById('remove-event-id-display').textContent = id;
+      document.getElementById('remove-event-title-display').textContent = title;
+      document.getElementById('remove-event-reason').value = '';
+      document.getElementById('remove-event-modal').classList.add('show');
+    }
+
+    function closeRemoveEventModal() {
+      document.getElementById('remove-event-modal').classList.remove('show');
+      targetRemoveEventId = null;
+    }
+
+    document.getElementById('btn-confirm-remove-event').addEventListener('click', async () => {
+      const reason = document.getElementById('remove-event-reason').value.trim();
+      if (!reason) {
+        showToast('Please provide a mandatory reason for removing this event.', 'warning');
+        return;
+      }
+
+      try {
+        await apiFetch(`/api/admin/events/${targetRemoveEventId}/remove`, {
+          method: 'POST',
+          body: {
+            reason: reason,
+            removedReason: reason
+          }
+        });
+        closeRemoveEventModal();
+        showToast('Event soft-removed and notifications dispatched.', 'success');
+        searchEvents(eventPage);
+        loadOverviewStats();
+      } catch (err) {
+        showToast(err.message || 'Failed to remove event', 'danger');
+      }
+    });
+
+    // ==========================================
+    // 5. AUDIT TRAIL
+    // ==========================================
+    function resetAuditFilters() {
+      document.getElementById('audit-action-filter').value = '';
+      document.getElementById('audit-entity-filter').value = '';
+      searchAuditLogs(0);
+    }
+
+    async function searchAuditLogs(page = 0) {
+      auditPage = page;
+      const action = document.getElementById('audit-action-filter').value.trim();
+      const entityType = document.getElementById('audit-entity-filter').value;
+      const container = document.getElementById('audit-table-container');
+      const pagContainer = document.getElementById('audit-pagination');
+
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+          <p style="margin-top: 0.5rem; color: var(--neutral-500);">Fetching audit trail records...</p>
+        </div>
+      `;
+
+      try {
+        const params = new URLSearchParams({
+          page: auditPage,
+          size: auditPageSize
+        });
+        if (action) params.append('action', action);
+        if (entityType) params.append('entityType', entityType);
+
+        const data = await apiFetch(`/api/admin/audit-logs?${params.toString()}`);
+        const logs = data.content || [];
+
+        if (logs.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📜</div>
+              <h3>No Audit Logs Found</h3>
+              <p>No audit trail records matched your filter criteria.</p>
+            </div>
+          `;
+          pagContainer.style.display = 'none';
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Target Entity</th>
+                <th>Administrator</th>
+                <th>Details & Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${logs.map(lg => {
+                const dateStr = lg.createdAt ? new Date(lg.createdAt).toLocaleString() : 'N/A';
+                
+                let actionBadge = 'badge-neutral';
+                if (lg.action && lg.action.includes('REMOVED')) actionBadge = 'badge-danger';
+                else if (lg.action && (lg.action.includes('VERIFIED') || lg.action.includes('APPROVED'))) actionBadge = 'badge-success';
+                else if (lg.action && (lg.action.includes('REJECTED') || lg.action.includes('SUSPENDED'))) actionBadge = 'badge-warning';
+
+                return `
+                  <tr>
+                    <td><span style="font-family: monospace; color: var(--neutral-500);">#${lg.id}</span></td>
+                    <td style="font-size: 0.85rem; color: var(--neutral-600); white-space: nowrap;">
+                      ${dateStr}
+                    </td>
+                    <td>
+                      <span class="badge ${actionBadge}" style="font-family: monospace; font-size: 0.75rem;">
+                        ${escapeHtml(lg.action)}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge badge-neutral">${escapeHtml(lg.entityType || '')}</span>
+                      ${lg.entityId ? `<span style="font-family: monospace; font-size: 0.8rem; color: var(--neutral-600); margin-left: 0.25rem;">#${lg.entityId}</span>` : ''}
+                    </td>
+                    <td>
+                      <div style="font-size: 0.85rem; font-weight: 600; color: var(--neutral-800);">${escapeHtml(lg.performedByName || 'System')}</div>
+                      <div style="font-size: 0.75rem; color: var(--neutral-500);">${escapeHtml(lg.performedByEmail || '')}</div>
+                    </td>
+                    <td style="max-width: 300px;">
+                      <div style="font-size: 0.85rem; color: var(--neutral-700); word-break: break-word;">
+                        ${escapeHtml(lg.details || '')}
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+
+        renderPagination(pagContainer, data, searchAuditLogs);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="alert alert-danger" style="margin: 1.5rem;">
+            Failed to load audit logs: ${escapeHtml(err.message)}
+          </div>
+        `;
+        pagContainer.style.display = 'none';
+      }
+    }
+
+    // ==========================================
+    // COMMON: PAGINATION HELPER
+    // ==========================================
+    function renderPagination(container, pageData, onPageClickFn) {
+      if (!pageData || pageData.totalPages <= 1) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      const currentPage = pageData.number;
+      const totalPages = pageData.totalPages;
+      const totalElements = pageData.totalElements;
+
+      container.innerHTML = `
+        <div style="color: var(--neutral-600);">
+          Showing Page <strong>${currentPage + 1}</strong> of <strong>${totalPages}</strong> (${totalElements} total items)
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary btn-sm" ${currentPage === 0 ? 'disabled' : ''} id="pag-btn-prev">
+            &larr; Previous
+          </button>
+          <button class="btn btn-secondary btn-sm" ${currentPage >= totalPages - 1 ? 'disabled' : ''} id="pag-btn-next">
+            Next &rarr;
+          </button>
+        </div>
+      `;
+
+      const prevBtn = container.querySelector('#pag-btn-prev');
+      const nextBtn = container.querySelector('#pag-btn-next');
+
+      if (prevBtn && currentPage > 0) {
+        prevBtn.addEventListener('click', () => onPageClickFn(currentPage - 1));
+      }
+      if (nextBtn && currentPage < totalPages - 1) {
+        nextBtn.addEventListener('click', () => onPageClickFn(currentPage + 1));
+      }
+    }
   </script>
 </body>
 </html>

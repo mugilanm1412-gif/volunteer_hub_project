@@ -1006,3 +1006,106 @@ When an error occurs, all endpoints return a consistent JSON payload:
   - `Content-Type: application/pdf`
   - `Content-Disposition: attachment; filename="certificate-VH-2026-000001.pdf"`
 
+---
+
+## 12. Admin Governance & Platform Management (`/api/admin/**`)
+
+### 12.1 List & Search Platform Users
+- **Method:** `GET`
+- **URL:** `/api/admin/users?query={string}&role={Role}&status={UserStatus}&page={int}&size={int}`
+- **Required Role:** `ADMIN`
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "content": [
+      {
+        "id": 1,
+        "email": "alice@example.com",
+        "displayName": "Alice Smith",
+        "role": "VOLUNTEER",
+        "status": "ACTIVE",
+        "createdAt": "2026-10-10T12:00:00"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+  ```
+
+### 12.2 Update User Account Lifecycle Status
+- **Method:** `PATCH`
+- **URL:** `/api/admin/users/{id}/status`
+- **Required Role:** `ADMIN`
+- **Request Body:**
+  ```json
+  {
+    "status": "SUSPENDED"
+  }
+  ```
+- **Rules:**
+  - Status must be one of `ACTIVE`, `SUSPENDED`, `DEACTIVATED`.
+  - An administrator cannot suspend or deactivate their own account (`400 Bad Request`).
+  - Suspended or deactivated users are rejected during authentication attempts.
+  - Automatically writes an immutable entry to the platform `audit_logs` table.
+- **Success Status:** `200 OK`
+- **Response Body:** Updated `AdminUserDto`.
+
+### 12.3 List Platform Events for Governance
+- **Method:** `GET`
+- **URL:** `/api/admin/events?query={string}&status={EventStatus}&page={int}&size={int}`
+- **Required Role:** `ADMIN`
+- **Success Status:** `200 OK`
+- **Response Body:** Paginated `PageResponseDto<AdminEventItemDto>`.
+
+### 12.4 Soft-Remove Inappropriate Event
+- **Method:** `POST`
+- **URL:** `/api/admin/events/{id}/remove`
+- **Required Role:** `ADMIN`
+- **Request Body:**
+  ```json
+  {
+    "reason": "Violation of community standards and misleading schedule details."
+  }
+  ```
+- **Rules:**
+  - Soft removal sets event status to `REMOVED` and persists `removed_reason`.
+  - All registered volunteers with `APPROVED` or `PENDING` applications receive an in-app `EVENT_REMOVED` notification.
+  - The organizing NGO is also notified in-app.
+  - Creates an audit log entry (`EVENT_REMOVED`).
+- **Success Status:** `200 OK`
+
+### 12.5 Retrieve Platform Audit Logs
+- **Method:** `GET`
+- **URL:** `/api/admin/audit-logs?action={string}&entityType={string}&page={int}&size={int}`
+- **Required Role:** `ADMIN`
+- **Success Status:** `200 OK`
+- **Response Body:** Paginated `PageResponseDto<AuditLogDto>`.
+
+### 12.6 Platform Summary Statistics
+- **Method:** `GET`
+- **URL:** `/api/admin/stats`
+- **Required Role:** `ADMIN`
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "totalUsers": 25,
+    "totalVolunteers": 18,
+    "totalNgos": 6,
+    "activeUsers": 24,
+    "suspendedUsers": 1,
+    "totalEvents": 14,
+    "publishedEvents": 8,
+    "completedEvents": 5,
+    "removedEvents": 1,
+    "totalRegistrations": 42,
+    "totalVerifiedHours": 128.5,
+    "totalCertificatesIssued": 19,
+    "pendingNgoVerifications": 1
+  }
+  ```
+
+
