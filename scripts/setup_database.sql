@@ -22,9 +22,11 @@ CREATE DATABASE IF NOT EXISTS volunteer_hub
 -- The default password configured in application.properties is 'vh_secret_2026'.
 -- You can change this password, but remember to update your DB_PASSWORD env var or application.properties accordingly.
 CREATE USER IF NOT EXISTS 'vh_app'@'localhost' IDENTIFIED BY 'vh_secret_2026';
+CREATE USER IF NOT EXISTS 'vh_app'@'127.0.0.1' IDENTIFIED BY 'vh_secret_2026';
 
 -- Step 3: Grant all privileges on the volunteer_hub database to vh_app
 GRANT ALL PRIVILEGES ON volunteer_hub.* TO 'vh_app'@'localhost';
+GRANT ALL PRIVILEGES ON volunteer_hub.* TO 'vh_app'@'127.0.0.1';
 
 -- Step 4: Flush privileges to ensure changes take effect immediately
 FLUSH PRIVILEGES;

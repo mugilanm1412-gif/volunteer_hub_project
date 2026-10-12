@@ -160,18 +160,108 @@
   gap: 0.5rem;
 }
 
+/* Mobile Toggle Button */
+.navbar-mobile-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 38px;
+  height: 38px;
+  transition: all var(--transition-fast);
+}
+
+.navbar-mobile-toggle:focus {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
+.navbar-mobile-toggle .hamburger-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: var(--neutral-700);
+  border-radius: 2px;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.navbar-mobile-toggle.is-active .hamburger-bar:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.navbar-mobile-toggle.is-active .hamburger-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-mobile-toggle.is-active .hamburger-bar:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.navbar-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  margin-left: 2rem;
+}
+
 /* Responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .navbar-inner {
     flex-wrap: wrap;
+  }
+
+  .navbar-mobile-toggle {
+    display: flex;
+  }
+
+  .navbar-collapse {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--neutral-200);
     gap: 1rem;
   }
+
+  .navbar-collapse.is-open {
+    display: flex;
+    animation: fadeIn 0.2s ease-out;
+  }
+
   .navbar-nav {
-    order: 3;
-    width: 100%;
-    justify-content: space-around;
-    border-top: 1px solid var(--neutral-100);
-    padding-top: 0.5rem;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding: 0;
+  }
+
+  .navbar-nav .nav-link {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .navbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--neutral-200);
   }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+

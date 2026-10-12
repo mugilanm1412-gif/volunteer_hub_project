@@ -99,15 +99,55 @@ function renderNavbar(container, user) {
         <span class="navbar-brand-badge">Platform</span>
       </a>
 
-      <ul class="navbar-nav">
-        ${navLinksHtml}
-      </ul>
+      <button class="navbar-mobile-toggle" id="navbar-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
 
-      <div class="navbar-actions">
-        ${actionsHtml}
+      <div class="navbar-collapse" id="navbar-collapse-menu">
+        <ul class="navbar-nav">
+          ${navLinksHtml}
+        </ul>
+
+        <div class="navbar-actions">
+          ${actionsHtml}
+        </div>
       </div>
     </div>
   `;
+
+  // Mobile menu toggle logic
+  const toggleBtn = document.getElementById('navbar-toggle-btn');
+  const collapseMenu = document.getElementById('navbar-collapse-menu');
+  if (toggleBtn && collapseMenu) {
+    toggleBtn.addEventListener('click', () => {
+      const isOpen = collapseMenu.classList.toggle('is-open');
+      toggleBtn.classList.toggle('is-active', isOpen);
+      toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && collapseMenu.classList.contains('is-open')) {
+        collapseMenu.classList.remove('is-open');
+        toggleBtn.classList.remove('is-active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.focus();
+      }
+    });
+
+    // Close when clicking nav link
+    collapseMenu.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (collapseMenu.classList.contains('is-open')) {
+          collapseMenu.classList.remove('is-open');
+          toggleBtn.classList.remove('is-active');
+          toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+  }
 
   // Attach logout handler if logged in
   const logoutBtn = document.getElementById('btn-logout');
