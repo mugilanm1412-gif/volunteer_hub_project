@@ -229,4 +229,121 @@ public class PdfReportService {
         cell.setPadding(4f);
         table.addCell(cell);
     }
+
+    /**
+     * Generates a prestigious, styled Certificate of Volunteer Service document using OpenPDF.
+     */
+    public byte[] generateCertificatePdf(com.volunteerhub.entity.Certificate certificate,
+                                         String volunteerName,
+                                         String eventTitle,
+                                         String ngoName,
+                                         java.math.BigDecimal hoursWorked,
+                                         LocalDate eventDate) {
+        Document document = new Document(PageSize.A4.rotate(), 36, 36, 36, 36);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Decorative outer border table
+            PdfPTable outerTable = new PdfPTable(1);
+            outerTable.setWidthPercentage(100);
+
+            PdfPCell mainCell = new PdfPCell();
+            mainCell.setPadding(28f);
+            mainCell.setBorderColor(COLOR_PRIMARY);
+            mainCell.setBorderWidth(3f);
+            mainCell.setBackgroundColor(new Color(255, 255, 255));
+
+            // Content within certificate
+            Font brandFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, COLOR_PRIMARY);
+            Paragraph brand = new Paragraph("VOLUNTEER HUB PLATFORM", brandFont);
+            brand.setAlignment(Element.ALIGN_CENTER);
+            brand.setSpacingAfter(8f);
+            mainCell.addElement(brand);
+
+            Font certTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 24, COLOR_DARK);
+            Paragraph certTitle = new Paragraph("CERTIFICATE OF VOLUNTEER SERVICE", certTitleFont);
+            certTitle.setAlignment(Element.ALIGN_CENTER);
+            certTitle.setSpacingAfter(6f);
+            mainCell.addElement(certTitle);
+
+            Font certSubFont = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 12, COLOR_MUTED);
+            Paragraph certSub = new Paragraph("This is proudly presented to", certSubFont);
+            certSub.setAlignment(Element.ALIGN_CENTER);
+            certSub.setSpacingAfter(14f);
+            mainCell.addElement(certSub);
+
+            // Volunteer Name
+            Font nameFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 22, COLOR_PRIMARY);
+            Paragraph name = new Paragraph(volunteerName, nameFont);
+            name.setAlignment(Element.ALIGN_CENTER);
+            name.setSpacingAfter(14f);
+            mainCell.addElement(name);
+
+            // Commendation text
+            Font bodyFont = FontFactory.getFont(FontFactory.HELVETICA, 11, COLOR_DARK);
+            String hoursStr = (hoursWorked != null ? hoursWorked.toPlainString() : "0") + " verified hours";
+            String dateStr = eventDate != null ? eventDate.toString() : LocalDate.now().toString();
+
+            Paragraph body = new Paragraph(
+                String.format("in grateful recognition for dedicating and successfully verifying %s of community service for the initiative \"%s\", hosted by %s on %s.",
+                    hoursStr, eventTitle, ngoName, dateStr),
+                bodyFont
+            );
+            body.setAlignment(Element.ALIGN_CENTER);
+            body.setLeading(18f);
+            body.setSpacingAfter(28f);
+            mainCell.addElement(body);
+
+            // Footer metadata table (3 columns)
+            PdfPTable footerTable = new PdfPTable(3);
+            footerTable.setWidthPercentage(100);
+            footerTable.setWidths(new float[]{1.5f, 1f, 1.5f});
+
+            // Col 1: Certificate Number & Issue Date
+            Font metaLabelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, COLOR_DARK);
+            Font metaValFont = FontFactory.getFont(FontFactory.HELVETICA, 9, COLOR_MUTED);
+            Phrase col1 = new Phrase();
+            col1.add(new Chunk("Certificate ID: ", metaLabelFont));
+            col1.add(new Chunk(certificate.getCertificateNumber() + "\n", metaValFont));
+            col1.add(new Chunk("Issue Date: ", metaLabelFont));
+            col1.add(new Chunk(certificate.getIssuedOn().toLocalDate().toString(), metaValFont));
+            PdfPCell cell1 = new PdfPCell(col1);
+            cell1.setBorder(Rectangle.NO_BORDER);
+            cell1.setVerticalAlignment(Element.ALIGN_BOTTOM);
+            footerTable.addCell(cell1);
+
+            // Col 2: Official Seal
+            Font sealFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, COLOR_GOLD);
+            Paragraph seal = new Paragraph("★ OFFICIAL ★\nVERIFIED RECORD", sealFont);
+            seal.setAlignment(Element.ALIGN_CENTER);
+            PdfPCell cell2 = new PdfPCell(seal);
+            cell2.setBorder(Rectangle.NO_BORDER);
+            cell2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            footerTable.addCell(cell2);
+
+            // Col 3: Host Organization & Authority
+            Phrase col3 = new Phrase();
+            col3.add(new Chunk("Host Organization:\n", metaLabelFont));
+            col3.add(new Chunk(ngoName + "\n", metaValFont));
+            col3.add(new Chunk("Volunteer Hub Electronic Authority", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, COLOR_MUTED)));
+            PdfPCell cell3 = new PdfPCell(col3);
+            cell3.setBorder(Rectangle.NO_BORDER);
+            cell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            cell3.setVerticalAlignment(Element.ALIGN_BOTTOM);
+            footerTable.addCell(cell3);
+
+            mainCell.addElement(footerTable);
+            outerTable.addCell(mainCell);
+            document.add(outerTable);
+
+            document.close();
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate certificate PDF: " + e.getMessage(), e);
+        }
+    }
 }

@@ -231,6 +231,14 @@
         <div class="stat-value" style="color: var(--primary-800);" id="stat-score">0.0</div>
         <div class="stat-subtext">Composite 100-point index</div>
       </div>
+      <div class="stat-card" style="border-color: #c7d2fe; background: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, #ffffff 100%);">
+        <div class="stat-icon">📜</div>
+        <div class="stat-label" style="color: #6366f1;">Certificates</div>
+        <div class="stat-value" style="color: #4f46e5;" id="stat-certs">0</div>
+        <div class="stat-subtext">
+          <a href="/certificates.html" style="color: #6366f1; text-decoration: none; font-weight: 600;">View & Download &rarr;</a>
+        </div>
+      </div>
     </div>
 
     <!-- Tier Badge Card & Progression -->
@@ -408,6 +416,14 @@
       try {
         performanceData = await apiFetch('/api/volunteers/me/performance');
         renderPerformanceStats(performanceData);
+
+        try {
+          const certs = await apiFetch('/api/volunteers/me/certificates');
+          const certEl = document.getElementById('stat-certs');
+          if (certEl) certEl.textContent = certs ? certs.length : 0;
+        } catch (e) {
+          // ignore
+        }
       } catch (err) {
         showToast('Failed to load performance metrics: ' + err.message, 'danger');
       }

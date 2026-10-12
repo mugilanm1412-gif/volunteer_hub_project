@@ -42,6 +42,7 @@ public class AttendanceService {
     private final com.volunteerhub.repository.VolunteerRatingRepository volunteerRatingRepository;
     private final AuditLogService auditLogService;
     private final NotificationService notificationService;
+    private final CertificateService certificateService;
 
     public AttendanceService(AttendanceRepository attendanceRepository,
                              EventRepository eventRepository,
@@ -50,7 +51,8 @@ public class AttendanceService {
                              com.volunteerhub.repository.NgoProfileRepository ngoProfileRepository,
                              com.volunteerhub.repository.VolunteerRatingRepository volunteerRatingRepository,
                              AuditLogService auditLogService,
-                             NotificationService notificationService) {
+                             NotificationService notificationService,
+                             CertificateService certificateService) {
         this.attendanceRepository = attendanceRepository;
         this.eventRepository = eventRepository;
         this.applicationRepository = applicationRepository;
@@ -59,6 +61,7 @@ public class AttendanceService {
         this.volunteerRatingRepository = volunteerRatingRepository;
         this.auditLogService = auditLogService;
         this.notificationService = notificationService;
+        this.certificateService = certificateService;
     }
 
     /**
@@ -267,6 +270,9 @@ public class AttendanceService {
                     "ATTENDANCE",
                     saved.getId()
             );
+
+            // Phase 6 Auto-issuance Hook: trigger automated certificate generation in the same transaction
+            onHoursApproved(saved, reviewer);
         } else {
             notificationService.createNotification(
                     volunteer,
@@ -282,11 +288,14 @@ public class AttendanceService {
     }
 
     /**
-     * Clean extension point for automatic certificate issuance upon hours approval.
-     * Phase 6 will hook into this method to auto-issue verifiable certificates.
+     * Extension point for automatic certificate issuance upon hours approval.
+     * When hours are APPROVED for a PRESENT volunteer, auto-issues a verifiable certificate.
      */
     protected void onHoursApproved(Attendance attendance, User reviewer) {
-        // Intentionally left as a clean extension point for Phase 6 automated certificate generation
+        if (attendance.getAttendanceStatus() == AttendanceStatus.PRESENT &&
+            attendance.getHoursStatus() == HoursStatus.APPROVED) {
+            certificateService.issueCertificateForAttendance(attendance, reviewer);
+        }
     }
 
     private AttendanceResponseDto mapToAttendanceResponseDto(Attendance a) {

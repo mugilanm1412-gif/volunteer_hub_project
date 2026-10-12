@@ -46,4 +46,15 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
            "WHERE app.volunteer.id = :volunteerId " +
            "ORDER BY e.eventDate DESC")
     List<Attendance> findByVolunteerIdWithDetails(@Param("volunteerId") Long volunteerId);
+
+    /**
+     * Retrieves an attendance record by ID with complete eager associations.
+     */
+    @Query("SELECT a FROM Attendance a " +
+           "JOIN FETCH a.application app " +
+           "JOIN FETCH app.volunteer v " +
+           "JOIN FETCH app.event e " +
+           "LEFT JOIN FETCH e.ngo ngo " +
+           "WHERE a.id = :id")
+    Optional<Attendance> findByIdWithDetails(@Param("id") Long id);
 }

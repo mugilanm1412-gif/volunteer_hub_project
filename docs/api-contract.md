@@ -959,3 +959,50 @@ When an error occurs, all endpoints return a consistent JSON payload:
 - **Response Headers:**
   - `Content-Type: application/pdf`
   - `Content-Disposition: attachment; filename="volunteer-performance-report.pdf"`
+
+---
+
+## 11. Certificates (`/api/volunteers/me/certificates`, `/api/certificates/{id}/pdf`)
+
+### 11.1 List Volunteer Certificates
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/certificates`
+- **Required Role:** `VOLUNTEER`
+- **Rules:**
+  - Retrieves all certificates issued to the authenticated volunteer.
+  - Certificates are automatically created when attendance hours are approved (`APPROVED`) for a `PRESENT` shift.
+  - Each certificate contains a unique certificate number formatted as `VH-<year>-<6-digit sequence>` (e.g. `VH-2026-000001`).
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  [
+    {
+      "id": 1,
+      "attendanceId": 12,
+      "certificateNumber": "VH-2026-000001",
+      "issuedOn": "2026-10-12T14:30:00",
+      "eventId": 3,
+      "eventTitle": "Urban Reforestation & Sapling Care",
+      "ngoName": "Green Earth Foundation",
+      "volunteerName": "Alice Smith",
+      "hoursWorked": 4.0,
+      "downloadUrl": "/api/certificates/1/pdf"
+    }
+  ]
+  ```
+
+### 11.2 Download Certificate PDF
+- **Method:** `GET`
+- **URL:** `/api/certificates/{id}/pdf`
+- **Required Role:** Owner `VOLUNTEER` or `ADMIN`
+- **Rules:**
+  - Generates an official, verifiable Certificate of Volunteer Service document using OpenPDF.
+  - Documents volunteer name, event title, host NGO, verified hours, issue date, unique certificate number, and electronic verification seal.
+  - Restricted to the volunteer who earned the certificate or system administrators (`ADMIN`).
+  - Attempt by another volunteer to download returns `403 Forbidden`.
+  - Non-existent certificate returns `404 Not Found`.
+- **Success Status:** `200 OK`
+- **Response Headers:**
+  - `Content-Type: application/pdf`
+  - `Content-Disposition: attachment; filename="certificate-VH-2026-000001.pdf"`
+

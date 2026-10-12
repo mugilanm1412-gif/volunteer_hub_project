@@ -37,6 +37,15 @@
         <div style="font-size: 0.8rem; color: var(--neutral-500); font-weight: 700;">HOURS PENDING REVIEW</div>
         <div id="stat-pending-hours" style="font-size: 1.85rem; font-weight: 800; color: #f59e0b; margin-top: 0.25rem;">0.0 hrs</div>
       </div>
+      <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--neutral-500); font-weight: 700;">EARNED CERTIFICATES</div>
+          <div id="stat-certificates-count" style="font-size: 1.85rem; font-weight: 800; color: #6366f1; margin-top: 0.25rem;">0</div>
+        </div>
+        <a href="/certificates.html" style="font-size: 0.8rem; color: var(--primary-700); font-weight: 600; text-decoration: none; margin-top: 0.35rem; display: inline-block;">
+          View Certificates &rarr;
+        </a>
+      </div>
     </div>
 
     <!-- Navigation Tabs -->
@@ -129,6 +138,14 @@
         document.getElementById('stat-verified-hours').textContent = `${verifiedHoursTotal.toFixed(1)} hrs`;
         document.getElementById('stat-events-attended').textContent = attendedCount;
         document.getElementById('stat-pending-hours').textContent = `${pendingHoursTotal.toFixed(1)} hrs`;
+
+        try {
+          const certs = await apiFetch('/api/volunteers/me/certificates');
+          const countEl = document.getElementById('stat-certificates-count');
+          if (countEl) countEl.textContent = certs ? certs.length : 0;
+        } catch (e) {
+          // Fallback if certificates endpoint is unreachable
+        }
       } catch (err) {
         // Fail silently if attendance summary encounters error
       }
@@ -226,9 +243,15 @@
         let hoursBadge = '';
         let hoursNote = '';
 
+        let certBtnHtml = '';
         if (att.hoursStatus === 'APPROVED') {
           hoursBadge = `<span class="badge badge-success">✓ ${hoursNum.toFixed(2)} hrs Verified</span>`;
           hoursNote = `<span style="font-size: 0.85rem; color: #10b981;">Credited by ${escapeHtml(att.ngoName || app.ngoName || 'NGO')}</span>`;
+          certBtnHtml = `
+            <a href="/certificates.html" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; border-color: #6366f1; color: #6366f1;">
+              📜 Certificate
+            </a>
+          `;
         } else if (att.hoursStatus === 'PENDING') {
           hoursBadge = `<span class="badge badge-warning">⏳ ${hoursNum.toFixed(2)} hrs Pending NGO Review</span>`;
           hoursNote = `<span style="font-size: 0.85rem; color: #b45309;">Logged by organizer, awaiting review.</span>`;
@@ -239,14 +262,15 @@
 
         attendanceSectionHtml = `
           <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
               <span class="badge ${isPresent ? 'badge-success' : 'badge-neutral'}">
                 ${isPresent ? '✓ Attended' : 'Marked Absent'}
               </span>
               ${hoursBadge}
             </div>
-            <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
               ${hoursNote}
+              ${certBtnHtml}
             </div>
           </div>
         `;

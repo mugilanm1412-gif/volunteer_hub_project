@@ -101,9 +101,19 @@
                   <p style="margin-bottom: 0.5rem; color: var(--neutral-700); font-size: 0.95rem;">
                     ${escapeHtml(n.message)}
                   </p>
-                  <span style="font-size: 0.8rem; color: var(--neutral-400);">
-                    ${timeFormatted}
-                  </span>
+                  <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.8rem; color: var(--neutral-400);">
+                      ${timeFormatted}
+                    </span>
+                    ${n.relatedEntityType === 'CERTIFICATE' ? `
+                      <a href="/certificates.html" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.8rem;">
+                        📜 View Certificates
+                      </a>
+                      <a href="/api/certificates/${n.relatedEntityId}/pdf" target="_blank" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.8rem;">
+                        Download PDF
+                      </a>
+                    ` : ''}
+                  </div>
                 </div>
                 ${isUnread ? `
                   <button class="btn btn-outline btn-sm" onclick="markSingleRead(${n.id})" title="Mark as read">

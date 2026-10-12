@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Certificates - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    .cert-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .cert-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+      position: relative;
+    }
+    .cert-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-300);
+    }
+    .cert-banner {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      color: #ffffff;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cert-number {
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      background: rgba(255, 255, 255, 0.18);
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-sm);
+    }
+    .cert-seal {
+      width: 36px;
+      height: 36px;
+      background: #f59e0b;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+    }
+    .cert-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cert-event-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--neutral-900);
+      margin: 0 0 0.5rem 0;
+      line-height: 1.35;
+    }
+    .cert-ngo {
+      font-size: 0.9rem;
+      color: var(--neutral-600);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 1.25rem;
+    }
+    .cert-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      background-color: var(--neutral-50);
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .cert-meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .cert-meta-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--neutral-500);
+      font-weight: 600;
+    }
+    .cert-meta-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--neutral-800);
+      margin-top: 0.15rem;
+    }
+    .cert-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: auto;
+    }
+    .stats-summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .summary-card {
+      background: #ffffff;
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .summary-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--neutral-500);
+    }
+    .summary-val {
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin-top: 0.25rem;
+      color: var(--neutral-900);
+    }
+  </style>
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content">
+    <div class="page-header" style="flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+          <span style="font-size: 1.5rem;">📜</span>
+          <h1 style="margin: 0;">Certificates of Volunteer Service</h1>
+        </div>
+        <p style="margin: 0; color: var(--neutral-600);">Official, verifiable credentials awarded upon confirmed NGO attendance approval.</p>
+      </div>
+      <div>
+        <a href="/performance.html" class="btn btn-outline btn-sm">
+          View Performance Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Impact & Verification Summary Bar -->
+    <div id="summary-bar" class="stats-summary-bar" style="display: none;">
+      <div class="summary-card">
+        <div class="summary-title">Certificates Earned</div>
+        <div id="stat-total-certs" class="summary-val" style="color: var(--primary-700);">0</div>
+        <div style="font-size: 0.8rem; color: var(--neutral-500); margin-top: 0.2rem;">Official Service Credentials</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Certified Hours</div>
+        <div id="stat-total-hours" class="summary-val" style="color: #10b981;">0.0 hrs</div>
+        <div style="font-size: 0.8rem; color: var(--neutral-500); margin-top: 0.2rem;">Independently Verified by NGOs</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Latest Credential</div>
+        <div id="stat-latest-date" class="summary-val" style="font-size: 1.25rem; color: #f59e0b; margin-top: 0.45rem;">-</div>
+        <div id="stat-latest-event" style="font-size: 0.8rem; color: var(--neutral-500); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div id="filter-controls" class="card" style="margin-bottom: 1.5rem; display: none;">
+      <div class="card-body" style="padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 240px; position: relative;">
+          <input type="text" id="cert-search" class="form-input" placeholder="Search by initiative title or certificate number..." oninput="filterCertificates()" style="margin: 0;">
+        </div>
+        <div>
+          <span id="filtered-count" style="font-size: 0.85rem; color: var(--neutral-500); font-weight: 600;">Showing 0 certificates</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" style="text-align: center; padding: 4rem 1rem;">
+      <span class="spinner" style="border-top-color: var(--primary-700); width: 36px; height: 36px;"></span>
+      <p style="margin-top: 1rem; color: var(--neutral-600); font-weight: 600;">Loading your verified certificates...</p>
+    </div>
+
+    <!-- Certificates Grid Container -->
+    <div id="cert-grid" class="cert-grid" style="display: none;"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="card" style="display: none; margin-top: 2rem;">
+      <div class="card-body" style="text-align: center; padding: 4rem 1.5rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">📜</div>
+        <h3 style="color: var(--neutral-900); font-size: 1.4rem; margin-bottom: 0.5rem;">No Certificates Earned Yet</h3>
+        <p style="color: var(--neutral-600); max-width: 520px; margin: 0 auto 1.5rem auto; line-height: 1.6;">
+          Certificates are automatically awarded when an NGO verifies and approves your volunteer attendance hours after an initiative concludes.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="/events.html" class="btn btn-primary">Find Volunteering Opportunities</a>
+          <a href="/my-events.html" class="btn btn-secondary">Check Schedule & Attendance</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-size: 0.85rem;">Volunteer Hub &bull; Verifiable Volunteer Service Credentials</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let allCertificates = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const user = await apiFetch('/api/users/me');
+        if (user.role !== 'VOLUNTEER') {
+          showToast('Certificates portal is for volunteers', 'warning');
+          setTimeout(() => window.location.href = '/index.html', 1500);
+          return;
+        }
+        await loadCertificates();
+      } catch (err) {
+        // Redirection handled by apiFetch for unauthenticated users
+      }
+    });
+
+    async function loadCertificates() {
+      const loadingEl = document.getElementById('loading-state');
+      const gridEl = document.getElementById('cert-grid');
+      const emptyEl = document.getElementById('empty-state');
+      const summaryBar = document.getElementById('summary-bar');
+      const filterControls = document.getElementById('filter-controls');
+
+      try {
+        const data = await apiFetch('/api/volunteers/me/certificates');
+        allCertificates = data || [];
+
+        loadingEl.style.display = 'none';
+
+        if (allCertificates.length === 0) {
+          emptyEl.style.display = 'block';
+          gridEl.style.display = 'none';
+          summaryBar.style.display = 'none';
+          filterControls.style.display = 'none';
+          return;
+        }
+
+        // Render Summary Bar
+        renderSummaryBar(allCertificates);
+        summaryBar.style.display = 'grid';
+        filterControls.style.display = 'block';
+
+        // Render Cards
+        renderCertCards(allCertificates);
+        gridEl.style.display = 'grid';
+
+      } catch (err) {
+        loadingEl.style.display = 'none';
+        showToast('Failed to load certificates: ' + err.message, 'danger');
+      }
+    }
+
+    function renderSummaryBar(certs) {
+      document.getElementById('stat-total-certs').textContent = certs.length;
+
+      const totalHours = certs.reduce((sum, c) => sum + (parseFloat(c.hoursWorked) || 0), 0);
+      document.getElementById('stat-total-hours').textContent = totalHours.toFixed(1) + ' hrs';
+
+      if (certs.length > 0) {
+        const latest = certs[0];
+        const dateStr = new Date(latest.issuedOn).toLocaleDateString(undefined, {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+        document.getElementById('stat-latest-date').textContent = dateStr;
+        document.getElementById('stat-latest-event').textContent = latest.eventTitle;
+      }
+    }
+
+    function renderCertCards(certs) {
+      const gridEl = document.getElementById('cert-grid');
+      const filteredCount = document.getElementById('filtered-count');
+      filteredCount.textContent = `Showing ${certs.length} of ${allCertificates.length} certificates`;
+
+      if (certs.length === 0) {
+        gridEl.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; background: #ffffff; border: 1px dashed var(--neutral-300); border-radius: var(--radius-md);">
+            <p style="color: var(--neutral-500); margin: 0;">No certificates matched your search criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      gridEl.innerHTML = certs.map(c => {
+        const dateStr = new Date(c.issuedOn).toLocaleDateString(undefined, {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+        const hoursFormatted = (parseFloat(c.hoursWorked) || 0).toFixed(1);
+
+        return `
+          <div class="cert-card">
+            <div class="cert-banner">
+              <span class="cert-number">${escapeHtml(c.certificateNumber)}</span>
+              <div class="cert-seal" title="Official Verified Credential">★</div>
+            </div>
+            <div class="cert-body">
+              <div>
+                <h3 class="cert-event-title">${escapeHtml(c.eventTitle)}</h3>
+                <div class="cert-ngo">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  <span>Hosted by <strong>${escapeHtml(c.ngoName)}</strong></span>
+                </div>
+
+                <div class="cert-meta-grid">
+                  <div class="cert-meta-item">
+                    <span class="cert-meta-label">Verified Hours</span>
+                    <span class="cert-meta-value" style="color: #10b981;">${hoursFormatted} hrs</span>
+                  </div>
+                  <div class="cert-meta-item">
+                    <span class="cert-meta-label">Date Issued</span>
+                    <span class="cert-meta-value">${dateStr}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cert-actions">
+                <a href="${escapeHtml(c.downloadUrl)}" target="_blank" class="btn btn-primary btn-sm" style="flex: 1;" download="certificate-${escapeHtml(c.certificateNumber)}.pdf">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Download PDF
+                </a>
+                <button class="btn btn-secondary btn-sm" onclick="copyCertId('${escapeHtml(c.certificateNumber)}')" title="Copy Certificate ID">
+                  📋
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterCertificates() {
+      const query = (document.getElementById('cert-search').value || '').trim().toLowerCase();
+      if (!query) {
+        renderCertCards(allCertificates);
+        return;
+      }
+      const filtered = allCertificates.filter(c => 
+        (c.certificateNumber && c.certificateNumber.toLowerCase().includes(query)) ||
+        (c.eventTitle && c.eventTitle.toLowerCase().includes(query)) ||
+        (c.ngoName && c.ngoName.toLowerCase().includes(query))
+      );
+      renderCertCards(filtered);
+    }
+
+    function copyCertId(certNumber) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(certNumber).then(() => {
+          showToast('Copied Certificate ID: ' + certNumber, 'success');
+        }).catch(() => {
+          showToast('Certificate ID: ' + certNumber, 'info');
+        });
+      } else {
+        showToast('Certificate ID: ' + certNumber, 'info');
+      }
+    }
+  </script>
+</body>
+</html>
