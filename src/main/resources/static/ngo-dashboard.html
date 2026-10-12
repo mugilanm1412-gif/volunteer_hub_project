@@ -193,9 +193,12 @@
                       <span class="badge ${badgeClass}">${ev.status}</span>
                     </td>
                     <td style="text-align: right;">
-                      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                        <a href="/attendance-management.html?eventId=${ev.id}" class="btn btn-primary btn-sm">
+                          Attendance
+                        </a>
                         <a href="/event-details.html?id=${ev.id}" class="btn btn-outline btn-sm">
-                          Review Applicants
+                          Applicants
                         </a>
                         <a href="/create-event.html?id=${ev.id}" class="btn btn-secondary btn-sm">
                           Edit

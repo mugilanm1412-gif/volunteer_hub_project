@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance & Hours Management - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    .att-row-present {
+      background-color: rgba(16, 185, 129, 0.04);
+    }
+    .att-row-absent {
+      background-color: rgba(244, 63, 94, 0.04);
+    }
+    .hours-input {
+      width: 90px;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--neutral-300);
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      text-align: right;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>Attendance & Volunteer Hours Management</h1>
+        <p>Log attendance, record service shifts, and review volunteer credit for your initiatives.</p>
+      </div>
+      <div>
+        <a href="/ngo-dashboard.html" class="btn btn-secondary btn-sm">&larr; Back to Dashboard</a>
+      </div>
+    </div>
+
+    <!-- Event Selector Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <h3 style="margin: 0; font-size: 1.15rem;">Select Event Initiative</h3>
+        <span id="events-count-badge" class="badge badge-neutral">Loading events...</span>
+      </div>
+      <div class="card-body">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="event-select" class="form-label required">Choose one of your events:</label>
+          <select id="event-select" class="form-select" onchange="onEventSelected()">
+            <option value="">-- Choose an event to manage attendance --</option>
+          </select>
+        </div>
+
+        <!-- Selected Event Summary Box -->
+        <div id="event-details-box" style="display: none; background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <span id="ev-status-badge" class="badge badge-info">STATUS</span>
+                <span id="ev-category" style="font-size: 0.85rem; font-weight: 600; color: var(--primary-700);">Category</span>
+              </div>
+              <h2 id="ev-title" style="font-size: 1.35rem; margin-bottom: 0.5rem; color: var(--neutral-900);">Event Title</h2>
+              <div class="event-meta" style="margin: 0.25rem 0;">
+                <div class="event-meta-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span id="ev-datetime">Date & Time</span>
+                </div>
+                <div class="event-meta-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span id="ev-duration">Duration: 0.0 hrs</span>
+                </div>
+                <div class="event-meta-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <span id="ev-location">Location</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="ev-actions" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+              <button id="btn-complete-event" class="btn btn-outline btn-sm" style="display: none;" onclick="completeCurrentEvent()">
+                Mark Event as Completed
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Section -->
+    <div id="attendance-section" style="display: none;">
+      <!-- Stats summary banner -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.85rem; color: var(--neutral-500); font-weight: 600;">APPROVED VOLUNTEERS</div>
+          <div id="stat-approved-vols" style="font-size: 1.75rem; font-weight: 800; color: var(--neutral-900); margin-top: 0.25rem;">0</div>
+        </div>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.85rem; color: var(--neutral-500); font-weight: 600;">ATTENDANCE LOGGED</div>
+          <div id="stat-attendance-logged" style="font-size: 1.75rem; font-weight: 800; color: var(--primary-700); margin-top: 0.25rem;">0</div>
+        </div>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.85rem; color: var(--neutral-500); font-weight: 600;">HOURS APPROVED</div>
+          <div id="stat-hours-approved" style="font-size: 1.75rem; font-weight: 800; color: #10b981; margin-top: 0.25rem;">0.0 hrs</div>
+        </div>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.85rem; color: var(--neutral-500); font-weight: 600;">PENDING REVIEW</div>
+          <div id="stat-hours-pending" style="font-size: 1.75rem; font-weight: 800; color: #f59e0b; margin-top: 0.25rem;">0</div>
+        </div>
+      </div>
+
+      <!-- Volunteer Roster & Attendance Table -->
+      <div class="card">
+        <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem;">Volunteer Shift Roster</h3>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--neutral-500);">
+              Mark present volunteers and enter confirmed shift hours. Tolerated maximum is scheduled duration + 1.0 hr.
+            </p>
+          </div>
+          <div id="batch-save-actions" style="display: none;">
+            <button id="btn-save-batch" class="btn btn-primary" onclick="submitBatchAttendance()">
+              Save & Record Attendance
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body" style="padding: 0;">
+          <div id="roster-table-container" class="table-responsive">
+            <div style="text-align: center; padding: 3rem;">
+              <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+              <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading volunteer roster...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reserved for Phase 5: Volunteer Ratings -->
+      <div class="card" style="margin-top: 2rem; border-style: dashed; background-color: var(--neutral-50);">
+        <div class="card-header" style="background: transparent;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.25rem;">⭐</span>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--neutral-700);">Volunteer Ratings & Performance Feedback</h3>
+            <span class="badge badge-neutral" style="font-size: 0.7rem;">Coming in Phase 5</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color: var(--neutral-500); margin: 0; font-size: 0.95rem;">
+            Once volunteer attendance and hours are verified, organizers will be able to submit performance ratings (Punctuality, Teamwork, Effort rated 1–5 stars) to calculate community badges and leaderboard standings.
+          </p>
+        </div>
+      </div>
+      <!-- End Reserved for Phase 5 -->
+    </div>
+
+    <!-- Empty state when no event is selected -->
+    <div id="no-event-selected-card" class="card" style="margin-top: 1rem;">
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <h3>Select an Event to Begin</h3>
+        <p>Choose one of your registered events from the dropdown above to view approved applicants, record attendance, and verify shift hours.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Rejection Reason Modal -->
+  <div id="reject-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-title">Reject Volunteer Hours</h3>
+        <button type="button" class="modal-close-btn" onclick="closeRejectModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.95rem; color: var(--neutral-700); margin-bottom: 1rem;">
+          You are rejecting hours for <strong id="modal-vol-name">Volunteer</strong> on <strong id="modal-event-title">Event</strong>.
+        </p>
+        <div class="form-group">
+          <label for="reject-reason-input" class="form-label required">Reason for Rejection</label>
+          <textarea id="reject-reason-input" class="form-control" rows="4" placeholder="Explain clearly why these hours were not approved (e.g. Volunteer left early without completing shift, unverified log, etc.). This reason is shared with the volunteer."></textarea>
+          <span id="modal-error" class="form-error" style="display: none;">A non-empty reason is mandatory for rejection.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-reject" onclick="confirmHoursRejection()">
+          Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-weight: 600;">Volunteer Hub &bull; Empowering Verified Impact</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let myEvents = [];
+    let selectedEvent = null;
+    let eventApplications = [];
+    let eventAttendance = [];
+    let pendingRejectAttendanceId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const user = await apiFetch('/api/users/me');
+        if (user.role !== 'NGO') {
+          showNotNgo();
+          return;
+        }
+      } catch (err) {
+        window.location.href = '/login.html?redirect=/attendance-management.html';
+        return;
+      }
+
+      await loadMyEvents();
+      checkUrlParams();
+    });
+
+    function showNotNgo() {
+      document.querySelector('main.main-content').innerHTML = `
+        <div class="card" style="margin-top: 2rem;">
+          <div class="empty-state">
+            <div class="empty-state-icon">🏢</div>
+            <h3>NGO Organizer Access Required</h3>
+            <p>Attendance logging and hours verification are reserved for registered NGO event organizers.</p>
+            <a href="/login.html" class="btn btn-primary" style="margin-top: 1rem;">Log In as NGO</a>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadMyEvents() {
+      const select = document.getElementById('event-select');
+      const badge = document.getElementById('events-count-badge');
+
+      try {
+        const pageData = await apiFetch('/api/events/mine?size=100');
+        myEvents = pageData.content || [];
+
+        select.innerHTML = '<option value="">-- Choose an event to manage attendance --</option>';
+
+        if (myEvents.length === 0) {
+          badge.textContent = '0 Events Found';
+          select.innerHTML += '<option disabled>No events created yet</option>';
+          return;
+        }
+
+        badge.textContent = `${myEvents.length} Event${myEvents.length === 1 ? '' : 's'}`;
+
+        myEvents.forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.id;
+          const statusTag = ev.status === 'COMPLETED' ? '✓ COMPLETED' : ev.status;
+          const dateStr = ev.eventDate || 'No date';
+          opt.textContent = `[${statusTag}] ${ev.title} (${dateStr})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        badge.textContent = 'Failed to load';
+        showToast('Failed to load events: ' + err.message, 'danger');
+      }
+    }
+
+    function checkUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const eventId = params.get('eventId');
+      if (eventId) {
+        const select = document.getElementById('event-select');
+        select.value = eventId;
+        onEventSelected();
+      }
+    }
+
+    async function onEventSelected() {
+      const select = document.getElementById('event-select');
+      const eventId = select.value ? parseInt(select.value, 10) : null;
+
+      if (!eventId) {
+        selectedEvent = null;
+        document.getElementById('event-details-box').style.display = 'none';
+        document.getElementById('attendance-section').style.display = 'none';
+        document.getElementById('no-event-selected-card').style.display = 'block';
+        return;
+      }
+
+      selectedEvent = myEvents.find(e => e.id === eventId);
+      if (!selectedEvent) return;
+
+      renderEventSummary(selectedEvent);
+      await loadEventRoster(selectedEvent.id);
+    }
+
+    function calculateDurationHours(startTime, endTime) {
+      if (!startTime || !endTime) return 4.0;
+      const [sh, sm] = startTime.split(':').map(Number);
+      const [eh, em] = endTime.split(':').map(Number);
+      const diffMinutes = (eh * 60 + em) - (sh * 60 + sm);
+      return diffMinutes > 0 ? (diffMinutes / 60) : 4.0;
+    }
+
+    function renderEventSummary(ev) {
+      document.getElementById('no-event-selected-card').style.display = 'none';
+      const box = document.getElementById('event-details-box');
+      box.style.display = 'block';
+
+      document.getElementById('ev-title').textContent = ev.title;
+      document.getElementById('ev-category').textContent = ev.category || 'General';
+
+      const statusBadge = document.getElementById('ev-status-badge');
+      statusBadge.textContent = ev.status;
+      if (ev.status === 'COMPLETED') {
+        statusBadge.className = 'badge badge-success';
+      } else if (ev.status === 'PUBLISHED') {
+        statusBadge.className = 'badge badge-info';
+      } else {
+        statusBadge.className = 'badge badge-neutral';
+      }
+
+      const dateStr = ev.eventDate
+        ? new Date(ev.eventDate + 'T00:00:00').toLocaleDateString(undefined, {
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+          })
+        : 'Date not set';
+      const timeStr = (ev.startTime && ev.endTime)
+        ? `${ev.startTime.substring(0, 5)} - ${ev.endTime.substring(0, 5)}`
+        : '';
+      document.getElementById('ev-datetime').textContent = `${dateStr} ${timeStr ? '• ' + timeStr : ''}`;
+
+      const durationHours = calculateDurationHours(ev.startTime, ev.endTime);
+      document.getElementById('ev-duration').textContent = `Duration: ${durationHours.toFixed(1)} hrs (Scheduled)`;
+      document.getElementById('ev-location').textContent = ev.location || 'Location not specified';
+
+      const btnComplete = document.getElementById('btn-complete-event');
+      if (ev.status === 'PUBLISHED') {
+        btnComplete.style.display = 'inline-flex';
+      } else {
+        btnComplete.style.display = 'none';
+      }
+    }
+
+    async function completeCurrentEvent() {
+      if (!selectedEvent) return;
+      if (!confirm(`Mark '${selectedEvent.title}' as COMPLETED?\n\nThis confirms the initiative has concluded and unlocks verified hours logging.`)) {
+        return;
+      }
+
+      try {
+        const updated = await apiFetch(`/api/events/${selectedEvent.id}/complete`, { method: 'POST' });
+        showToast('Event marked as COMPLETED!', 'success');
+        selectedEvent.status = 'COMPLETED';
+
+        // Update list
+        const idx = myEvents.findIndex(e => e.id === selectedEvent.id);
+        if (idx !== -1) myEvents[idx].status = 'COMPLETED';
+
+        renderEventSummary(selectedEvent);
+        await loadEventRoster(selectedEvent.id);
+      } catch (err) {
+        showToast(err.message || 'Failed to complete event', 'danger');
+      }
+    }
+
+    async function loadEventRoster(eventId) {
+      const section = document.getElementById('attendance-section');
+      section.style.display = 'block';
+
+      const container = document.getElementById('roster-table-container');
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+          <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading applicants & attendance records...</p>
+        </div>
+      `;
+
+      try {
+        const [apps, atts] = await Promise.all([
+          apiFetch(`/api/events/${eventId}/applications`),
+          apiFetch(`/api/events/${eventId}/attendance`)
+        ]);
+
+        eventApplications = apps || [];
+        eventAttendance = atts || [];
+
+        renderRosterTable();
+        updateStats();
+      } catch (err) {
+        container.innerHTML = `
+          <div style="padding: 2rem;">
+            <div class="alert alert-danger">
+              Failed to load attendance records: ${escapeHtml(err.message)}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function updateStats() {
+      const approvedApps = eventApplications.filter(a => a.status === 'APPROVED');
+      document.getElementById('stat-approved-vols').textContent = approvedApps.length;
+      document.getElementById('stat-attendance-logged').textContent = eventAttendance.length;
+
+      let approvedHoursTotal = 0;
+      let pendingCount = 0;
+      eventAttendance.forEach(a => {
+        if (a.hoursStatus === 'APPROVED' && a.hoursWorked) {
+          approvedHoursTotal += parseFloat(a.hoursWorked);
+        } else if (a.hoursStatus === 'PENDING') {
+          pendingCount++;
+        }
+      });
+
+      document.getElementById('stat-hours-approved').textContent = `${approvedHoursTotal.toFixed(1)} hrs`;
+      document.getElementById('stat-hours-pending').textContent = pendingCount;
+    }
+
+    function renderRosterTable() {
+      const container = document.getElementById('roster-table-container');
+      const approvedApps = eventApplications.filter(a => a.status === 'APPROVED');
+      const scheduledDuration = calculateDurationHours(selectedEvent.startTime, selectedEvent.endTime);
+
+      if (approvedApps.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <h3>No Approved Volunteers</h3>
+            <p>This event does not have any approved applicants registered yet.</p>
+            <a href="/event-details.html?id=${selectedEvent.id}" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
+              View Event Registrations
+            </a>
+          </div>
+        `;
+        document.getElementById('batch-save-actions').style.display = 'none';
+        return;
+      }
+
+      // Map existing attendance by applicationId
+      const attMap = new Map();
+      eventAttendance.forEach(a => attMap.set(a.applicationId, a));
+
+      let hasUnmarked = false;
+
+      let tableHtml = `
+        <table class="table" id="roster-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Volunteer</th>
+              <th style="width: 20%;">Attendance</th>
+              <th style="width: 18%;">Shift Hours</th>
+              <th style="width: 17%;">Hours Status</th>
+              <th style="width: 20%; text-align: right;">Review Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      approvedApps.forEach(app => {
+        const att = attMap.get(app.id);
+
+        if (att) {
+          // Record already created
+          const isPresent = att.attendanceStatus === 'PRESENT';
+          const rowClass = isPresent ? 'att-row-present' : 'att-row-absent';
+
+          let statusBadge = '';
+          if (att.hoursStatus === 'APPROVED') {
+            statusBadge = `<span class="badge badge-success">✓ APPROVED</span>`;
+          } else if (att.hoursStatus === 'REJECTED') {
+            statusBadge = `<span class="badge badge-danger">✕ REJECTED</span>`;
+          } else {
+            statusBadge = `<span class="badge badge-warning">⏳ PENDING</span>`;
+          }
+
+          let actionsHtml = '';
+          if (att.hoursStatus === 'APPROVED') {
+            actionsHtml = `<span style="font-size: 0.85rem; color: #10b981; font-weight: 600;">Approved & Locked</span>`;
+          } else if (att.hoursStatus === 'PENDING') {
+            actionsHtml = `
+              <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button class="btn btn-primary btn-sm" onclick="approveHours(${att.id})">
+                  Approve
+                </button>
+                <button class="btn btn-secondary btn-sm" style="color: #dc2626;" onclick="openRejectModal(${att.id}, '${escapeHtml(app.volunteerName)}')">
+                  Reject...
+                </button>
+              </div>
+            `;
+          } else if (att.hoursStatus === 'REJECTED') {
+            actionsHtml = `
+              <div style="text-align: right;">
+                <button class="btn btn-outline btn-sm" onclick="approveHours(${att.id})">
+                  Approve Instead
+                </button>
+                <div style="font-size: 0.75rem; color: #dc2626; margin-top: 0.25rem; font-style: italic;" title="${escapeHtml(att.rejectReason)}">
+                  Reason: ${escapeHtml(att.rejectReason ? (att.rejectReason.length > 30 ? att.rejectReason.substring(0, 30) + '...' : att.rejectReason) : 'Rejected')}
+                </div>
+              </div>
+            `;
+          }
+
+          tableHtml += `
+            <tr class="${rowClass}">
+              <td>
+                <strong style="color: var(--neutral-900);">${escapeHtml(app.volunteerName)}</strong>
+                <div style="font-size: 0.8rem; color: var(--neutral-500);">${escapeHtml(app.volunteerEmail || '')}</div>
+                ${app.volunteerSkills ? `<div style="font-size: 0.75rem; color: var(--primary-700); margin-top: 0.2rem;">Skills: ${escapeHtml(app.volunteerSkills)}</div>` : ''}
+              </td>
+              <td>
+                <span class="badge ${isPresent ? 'badge-success' : 'badge-neutral'}">
+                  ${att.attendanceStatus}
+                </span>
+              </td>
+              <td>
+                <strong>${parseFloat(att.hoursWorked).toFixed(2)} hrs</strong>
+              </td>
+              <td>
+                ${statusBadge}
+              </td>
+              <td style="text-align: right;">
+                ${actionsHtml}
+              </td>
+            </tr>
+          `;
+        } else {
+          // Unrecorded volunteer
+          hasUnmarked = true;
+          tableHtml += `
+            <tr data-app-id="${app.id}">
+              <td>
+                <strong style="color: var(--neutral-900);">${escapeHtml(app.volunteerName)}</strong>
+                <div style="font-size: 0.8rem; color: var(--neutral-500);">${escapeHtml(app.volunteerEmail || '')}</div>
+                ${app.volunteerSkills ? `<div style="font-size: 0.75rem; color: var(--primary-700); margin-top: 0.2rem;">Skills: ${escapeHtml(app.volunteerSkills)}</div>` : ''}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                  <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.9rem; cursor: pointer;">
+                    <input type="radio" name="att_${app.id}" value="PRESENT" checked onchange="toggleHoursInput(${app.id}, true, ${scheduledDuration})">
+                    Present
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.9rem; cursor: pointer; color: var(--neutral-600);">
+                    <input type="radio" name="att_${app.id}" value="ABSENT" onchange="toggleHoursInput(${app.id}, false, ${scheduledDuration})">
+                    Absent
+                  </label>
+                </div>
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                  <input type="number" step="0.5" min="0.1" max="${(scheduledDuration + 1.0).toFixed(1)}"
+                         id="hours_${app.id}" class="hours-input" value="${scheduledDuration.toFixed(1)}">
+                  <span style="font-size: 0.85rem; color: var(--neutral-500);">hrs</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-neutral">UNRECORDED</span>
+              </td>
+              <td style="text-align: right; color: var(--neutral-400); font-size: 0.85rem;">
+                Pending Batch Save
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      tableHtml += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = tableHtml;
+      document.getElementById('batch-save-actions').style.display = hasUnmarked ? 'block' : 'none';
+    }
+
+    function toggleHoursInput(appId, isPresent, scheduledDuration) {
+      const input = document.getElementById(`hours_${appId}`);
+      if (!input) return;
+      if (isPresent) {
+        input.disabled = false;
+        input.value = scheduledDuration.toFixed(1);
+        input.style.opacity = '1';
+      } else {
+        input.disabled = true;
+        input.value = '0.0';
+        input.style.opacity = '0.4';
+      }
+    }
+
+    async function submitBatchAttendance() {
+      if (!selectedEvent) return;
+
+      const unrecordedRows = document.querySelectorAll('tr[data-app-id]');
+      if (unrecordedRows.length === 0) {
+        showToast('All volunteer records are already logged.', 'info');
+        return;
+      }
+
+      const scheduledDuration = calculateDurationHours(selectedEvent.startTime, selectedEvent.endTime);
+      const maxAllowedHours = scheduledDuration + 1.0;
+      const records = [];
+
+      for (const row of unrecordedRows) {
+        const appId = parseInt(row.getAttribute('data-app-id'), 10);
+        const radio = row.querySelector(`input[name="att_${appId}"]:checked`);
+        const status = radio ? radio.value : 'PRESENT';
+        const hoursInput = document.getElementById(`hours_${appId}`);
+
+        let hours = status === 'PRESENT' ? parseFloat(hoursInput.value) : 0.0;
+
+        if (status === 'PRESENT') {
+          if (isNaN(hours) || hours <= 0) {
+            showToast('Hours must be greater than 0 for present volunteers.', 'danger');
+            hoursInput.focus();
+            return;
+          }
+          if (hours > maxAllowedHours) {
+            showToast(`Hours (${hours}) cannot exceed scheduled duration + 1.0 hr tolerance (${maxAllowedHours} hrs).`, 'danger');
+            hoursInput.focus();
+            return;
+          }
+        } else {
+          hours = 0.0;
+        }
+
+        records.push({
+          applicationId: appId,
+          attendanceStatus: status,
+          hoursWorked: hours
+        });
+      }
+
+      const btn = document.getElementById('btn-save-batch');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        await apiFetch(`/api/events/${selectedEvent.id}/attendance`, {
+          method: 'POST',
+          body: { records }
+        });
+
+        showToast(`Successfully logged attendance for ${records.length} volunteer${records.length === 1 ? '' : 's'}!`, 'success');
+        await loadEventRoster(selectedEvent.id);
+      } catch (err) {
+        showToast(err.message || 'Failed to record attendance', 'danger');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save & Record Attendance';
+      }
+    }
+
+    async function approveHours(attendanceId) {
+      if (!confirm('Approve these volunteer service hours?\n\nOnce approved, verified hours are permanently credited to the volunteer and become immutable.')) {
+        return;
+      }
+
+      try {
+        await apiFetch(`/api/attendance/${attendanceId}/hours-review`, {
+          method: 'PATCH',
+          body: { status: 'APPROVED', reason: null }
+        });
+
+        showToast('Volunteer hours approved successfully!', 'success');
+        await loadEventRoster(selectedEvent.id);
+      } catch (err) {
+        showToast(err.message || 'Failed to approve hours', 'danger');
+      }
+    }
+
+    function openRejectModal(attendanceId, volName) {
+      pendingRejectAttendanceId = attendanceId;
+      document.getElementById('modal-vol-name').textContent = volName;
+      document.getElementById('modal-event-title').textContent = selectedEvent ? selectedEvent.title : '';
+      document.getElementById('reject-reason-input').value = '';
+      document.getElementById('modal-error').style.display = 'none';
+
+      const modal = document.getElementById('reject-modal');
+      modal.classList.add('show');
+    }
+
+    function closeRejectModal() {
+      pendingRejectAttendanceId = null;
+      const modal = document.getElementById('reject-modal');
+      modal.classList.remove('show');
+    }
+
+    async function confirmHoursRejection() {
+      if (!pendingRejectAttendanceId) return;
+
+      const reasonInput = document.getElementById('reject-reason-input');
+      const reason = reasonInput.value ? reasonInput.value.trim() : '';
+
+      if (!reason) {
+        document.getElementById('modal-error').style.display = 'block';
+        reasonInput.focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-confirm-reject');
+      btn.disabled = true;
+      btn.textContent = 'Rejecting...';
+
+      try {
+        await apiFetch(`/api/attendance/${pendingRejectAttendanceId}/hours-review`, {
+          method: 'PATCH',
+          body: { status: 'REJECTED', reason: reason }
+        });
+
+        showToast('Hours rejected with documented reason', 'info');
+        closeRejectModal();
+        await loadEventRoster(selectedEvent.id);
+      } catch (err) {
+        showToast(err.message || 'Failed to reject hours', 'danger');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirm Rejection';
+      }
+    }
+  </script>
+</body>
+</html>

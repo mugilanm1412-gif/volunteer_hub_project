@@ -638,3 +638,131 @@ When an error occurs, all endpoints return a consistent JSON payload:
 - **Success Status:** `200 OK`
 - **Response Body:** Paginated list of `VolunteerApplicationDto`
 
+---
+
+## 8. Attendance Management (`/api/events/{id}/attendance`, `/api/volunteers/me/attendance`)
+
+### 8.1 Batch Mark Attendance
+- **Method:** `POST`
+- **URL:** `/api/events/{id}/attendance`
+- **Required Role:** `NGO` (Owner of the event)
+- **Rules:**
+  - The event must have passed (`eventDate < CURRENT_DATE`) or have status `COMPLETED`.
+  - Only registrations with status `APPROVED` are eligible.
+  - One attendance record per registration (enforced by DB unique constraint on `application_id` and service pre-check).
+  - For `ABSENT` records, `hoursWorked` is strictly `0.0`.
+  - For `PRESENT` records, `hoursWorked` must be `> 0` and cannot exceed the scheduled duration plus the documented tolerance of 1.0 hour (`ATTENDANCE_HOURS_TOLERANCE`).
+  - New records are initialized with `hoursStatus = PENDING`.
+  - Volunteers attempting to call this endpoint receive `403 Forbidden`.
+- **Request Body:**
+  ```json
+  {
+    "records": [
+      {
+        "applicationId": 5,
+        "attendanceStatus": "PRESENT",
+        "hoursWorked": 4.0
+      },
+      {
+        "applicationId": 6,
+        "attendanceStatus": "ABSENT",
+        "hoursWorked": 0.0
+      }
+    ]
+  }
+  ```
+- **Success Status:** `201 Created`
+- **Response Body:**
+  ```json
+  [
+    {
+      "id": 1,
+      "applicationId": 5,
+      "volunteerId": 7,
+      "volunteerName": "Diana Prince",
+      "eventId": 2,
+      "eventTitle": "Urban Reforestation & Sapling Care",
+      "attendanceStatus": "PRESENT",
+      "hoursWorked": 4.0,
+      "hoursStatus": "PENDING",
+      "markedAt": "2026-10-12T18:00:00Z",
+      "rejectReason": null
+    },
+    {
+      "id": 2,
+      "applicationId": 6,
+      "volunteerId": 8,
+      "volunteerName": "Bruce Wayne",
+      "eventId": 2,
+      "eventTitle": "Urban Reforestation & Sapling Care",
+      "attendanceStatus": "ABSENT",
+      "hoursWorked": 0.0,
+      "hoursStatus": "PENDING",
+      "markedAt": "2026-10-12T18:00:00Z",
+      "rejectReason": null
+    }
+  ]
+  ```
+- **Error Responses:**
+  - `400 Bad Request`: Event not concluded yet; application not in `APPROVED` state; hours `<= 0` or exceeding duration limit.
+  - `403 Forbidden`: Authenticated user is not the owner NGO.
+  - `404 Not Found`: Event or application does not exist.
+  - `409 Conflict`: Attendance record already exists for the registration.
+
+### 8.2 Get Volunteer My Attendance
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/attendance`
+- **Required Role:** `VOLUNTEER`
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  [
+    {
+      "id": 1,
+      "applicationId": 5,
+      "eventId": 2,
+      "eventTitle": "Urban Reforestation & Sapling Care",
+      "ngoName": "Green Earth Foundation",
+      "eventDate": "2026-10-11",
+      "attendanceStatus": "PRESENT",
+      "hoursWorked": 4.0,
+      "hoursStatus": "PENDING",
+      "reviewedAt": null,
+      "rejectReason": null
+    }
+  ]
+  ```
+
+### 8.3 Review Volunteer Hours (Approve or Reject)
+- **Method:** `PATCH`
+- **URL:** `/api/attendance/{id}/hours-review`
+- **Required Role:** `NGO` (Owner of the event) or `ADMIN`
+- **Rules:**
+  - An already `APPROVED` attendance record is immutable and cannot be re-reviewed.
+  - When status is `REJECTED`, the `reason` field is mandatory (not blank).
+  - Admin users can review any attendance record; NGOs can only review records from their own events.
+  - Volunteers attempting to call this endpoint receive `403 Forbidden`.
+  - When hours are approved or rejected, an audit log entry is written to `audit_logs` and an in-app notification (`HOURS_APPROVED` or `HOURS_REJECTED`) is delivered to the volunteer.
+- **Request Body:**
+  ```json
+  {
+    "status": "APPROVED",
+    "reason": null
+  }
+  ```
+  or on rejection:
+  ```json
+  {
+    "status": "REJECTED",
+    "reason": "Volunteer was absent for the afternoon shift."
+  }
+  ```
+- **Success Status:** `200 OK`
+- **Response Body:** `AttendanceResponseDto`
+- **Error Responses:**
+  - `400 Bad Request`: Record is already approved (immutable) or rejection reason is missing.
+  - `403 Forbidden`: Authenticated NGO does not own the event associated with this attendance record.
+  - `404 Not Found`: Attendance record does not exist.
+
+
+
