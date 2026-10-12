@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Leaderboard - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    /* Top 3 Podium */
+    .podium-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .podium-card {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .podium-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .podium-card.rank-1 {
+      border: 2px solid #f59e0b;
+      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+    }
+    .podium-card.rank-2 {
+      border: 2px solid #94a3b8;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    }
+    .podium-card.rank-3 {
+      border: 2px solid #d97706;
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    }
+
+    .podium-medal {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .podium-rank {
+      position: absolute;
+      top: -12px;
+      padding: 0.2rem 0.75rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+    .rank-1 .podium-rank { background: #d97706; }
+    .rank-2 .podium-rank { background: #64748b; }
+    .rank-3 .podium-rank { background: #b45309; }
+
+    .podium-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--neutral-900);
+      margin: 0.35rem 0;
+    }
+    .podium-score {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--primary-700);
+    }
+
+    /* Rank badges for table */
+    .table-rank-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .rank-pill-1 { background: #fef3c7; color: #b45309; border: 1px solid #f59e0b; }
+    .rank-pill-2 { background: #f1f5f9; color: #475569; border: 1px solid #94a3b8; }
+    .rank-pill-3 { background: #ffedd5; color: #c2410c; border: 1px solid #d97706; }
+    .rank-pill-other { background: var(--neutral-100); color: var(--neutral-600); }
+
+    /* Badge Tags */
+    .badge-tier-gold {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      font-weight: 700;
+    }
+    .badge-tier-silver {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      font-weight: 700;
+    }
+    .badge-tier-bronze {
+      background: #ffedd5;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      font-weight: 700;
+    }
+    .badge-tier-newcomer {
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--primary-700);
+      border: 1px solid var(--primary-200);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content">
+    <div class="page-header" style="flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1>Volunteer Community Leaderboard</h1>
+        <p>Recognizing top volunteers by verified service hours, shift reliability, and organizer evaluations.</p>
+      </div>
+      <div>
+        <a href="/events.html" class="btn btn-outline btn-sm">Explore Volunteering Opportunities &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Privacy First Banner -->
+    <div class="card" style="margin-bottom: 2rem; border-color: var(--primary-200); background-color: rgba(15, 118, 110, 0.03);">
+      <div class="card-body" style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+        <div style="font-size: 1.75rem;">🛡️</div>
+        <div style="font-size: 0.9rem; color: var(--neutral-700);">
+          <strong>Privacy Preserved:</strong> Rankings exclusively display public display names, badges, verified hours, and composite scores. Email addresses, phone numbers, and private details are never exposed. Volunteers can toggle their leaderboard visibility anytime in their <a href="/performance.html" style="font-weight: 600; color: var(--primary-700);">Performance Dashboard</a>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 3 Podium Highlights -->
+    <div id="podium-section" class="podium-grid" style="display: none;">
+      <!-- Populated via Javascript -->
+    </div>
+
+    <!-- Leaderboard Table Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1.15rem;">Community Rankings</h3>
+          <span class="badge badge-neutral" id="leaderboard-total-count">0 Volunteers</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <label for="page-size-select" style="font-size: 0.85rem; color: var(--neutral-600);">Rows:</label>
+          <select id="page-size-select" class="form-select" style="width: 75px; padding: 0.3rem 0.5rem;" onchange="changePageSize(this.value)">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="table" style="margin: 0;" id="leaderboard-table">
+            <thead>
+              <tr>
+                <th style="width: 10%; text-align: center;">Rank</th>
+                <th style="width: 35%;">Volunteer</th>
+                <th style="width: 20%;">Community Badge</th>
+                <th style="width: 18%;">Verified Hours</th>
+                <th style="width: 17%; text-align: right;">Composite Score</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 3rem; color: var(--neutral-500);">
+                  Loading leaderboard rankings...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Pagination Footer -->
+      <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div id="pagination-info" style="font-size: 0.85rem; color: var(--neutral-600);">
+          Showing 0 of 0
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button id="btn-prev-page" class="btn btn-secondary btn-sm" onclick="navigatePage(-1)" disabled>
+            &larr; Previous
+          </button>
+          <span id="page-indicator" style="font-size: 0.85rem; font-weight: 600; padding: 0 0.5rem;">Page 1</span>
+          <button id="btn-next-page" class="btn btn-secondary btn-sm" onclick="navigatePage(1)" disabled>
+            Next &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-weight: 600;">Volunteer Hub &bull; Empowering Verified Impact</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let currentPage = 0;
+    let currentSize = 10;
+    let totalPages = 1;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadLeaderboard(currentPage, currentSize);
+    });
+
+    async function loadLeaderboard(page, size) {
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--neutral-500);">
+            Loading leaderboard data...
+          </td>
+        </tr>
+      `;
+
+      try {
+        const response = await apiFetch(`/api/leaderboard?page=${page}&size=${size}`);
+        renderLeaderboard(response);
+      } catch (err) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2.5rem; color: #dc2626;">
+              Failed to load leaderboard: ${escapeHtml(err.message)}
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderLeaderboard(data) {
+      currentPage = data.page;
+      currentSize = data.size;
+      totalPages = data.totalPages || 1;
+
+      document.getElementById('leaderboard-total-count').textContent = `${data.totalElements} Volunteers`;
+
+      // Update Pagination UI
+      const startEntry = data.totalElements > 0 ? (data.page * data.size) + 1 : 0;
+      const endEntry = Math.min((data.page + 1) * data.size, data.totalElements);
+      document.getElementById('pagination-info').textContent = `Showing ${startEntry}–${endEntry} of ${data.totalElements} volunteers`;
+      document.getElementById('page-indicator').textContent = `Page ${data.page + 1} of ${Math.max(1, data.totalPages)}`;
+
+      document.getElementById('btn-prev-page').disabled = data.page === 0;
+      document.getElementById('btn-next-page').disabled = data.last || (data.page + 1 >= data.totalPages);
+
+      const entries = data.content || [];
+      const tbody = document.getElementById('leaderboard-body');
+
+      // Top 3 Podium (rendered when on page 0)
+      if (data.page === 0 && entries.length >= 1) {
+        renderPodium(entries.slice(0, 3));
+      } else if (data.page !== 0) {
+        document.getElementById('podium-section').style.display = 'none';
+      }
+
+      if (entries.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 3rem;">
+              <div class="empty-state">
+                <div class="empty-state-icon">🏆</div>
+                <h4>Leaderboard is Empty</h4>
+                <p>No active volunteers are currently opted into the public leaderboard.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      entries.forEach(e => {
+        let rankClass = 'rank-pill-other';
+        let medal = '';
+        if (e.rank === 1) { rankClass = 'rank-pill-1'; medal = '🥇'; }
+        else if (e.rank === 2) { rankClass = 'rank-pill-2'; medal = '🥈'; }
+        else if (e.rank === 3) { rankClass = 'rank-pill-3'; medal = '🥉'; }
+
+        const badgeClass = getBadgeTierClass(e.badge);
+        const hoursFormatted = parseFloat(e.verifiedHours || 0).toFixed(1);
+        const scoreFormatted = parseFloat(e.score || 0).toFixed(2);
+
+        html += `
+          <tr>
+            <td style="text-align: center;">
+              <div class="table-rank-pill ${rankClass}" title="Rank #${e.rank}">
+                ${e.rank <= 3 ? medal : e.rank}
+              </div>
+            </td>
+            <td>
+              <strong style="color: var(--neutral-900); font-size: 0.95rem;">${escapeHtml(e.displayName)}</strong>
+            </td>
+            <td>
+              <span class="badge ${badgeClass}">
+                ${escapeHtml(e.badge || 'NEWCOMER')}
+              </span>
+            </td>
+            <td>
+              <strong style="color: var(--neutral-800);">${hoursFormatted} hrs</strong>
+            </td>
+            <td style="text-align: right;">
+              <span style="font-weight: 700; color: var(--primary-700); font-size: 1.05rem;">
+                ${scoreFormatted}
+              </span>
+              <span style="font-size: 0.75rem; color: var(--neutral-400);">/ 100</span>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function renderPodium(top3) {
+      const container = document.getElementById('podium-section');
+      container.style.display = 'grid';
+
+      let html = '';
+      top3.forEach((e, idx) => {
+        const rank = idx + 1;
+        const medal = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : '🥉');
+        const badgeClass = getBadgeTierClass(e.badge);
+
+        html += `
+          <div class="podium-card rank-${rank}">
+            <div class="podium-rank">Rank #${rank}</div>
+            <div class="podium-medal">${medal}</div>
+            <div class="podium-name">${escapeHtml(e.displayName)}</div>
+            <div style="margin-bottom: 0.75rem;">
+              <span class="badge ${badgeClass}">${escapeHtml(e.badge || 'NEWCOMER')}</span>
+            </div>
+            <div class="podium-score">${parseFloat(e.score || 0).toFixed(2)}</div>
+            <div style="font-size: 0.8rem; color: var(--neutral-500); margin-top: 0.25rem;">
+              ${parseFloat(e.verifiedHours || 0).toFixed(1)} verified hours
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function getBadgeTierClass(badge) {
+      if (badge === 'GOLD') return 'badge-tier-gold';
+      if (badge === 'SILVER') return 'badge-tier-silver';
+      if (badge === 'BRONZE') return 'badge-tier-bronze';
+      return 'badge-tier-newcomer';
+    }
+
+    async function navigatePage(delta) {
+      const targetPage = currentPage + delta;
+      if (targetPage >= 0 && targetPage < totalPages) {
+        await loadLeaderboard(targetPage, currentSize);
+      }
+    }
+
+    async function changePageSize(newSize) {
+      currentSize = parseInt(newSize, 10);
+      await loadLeaderboard(0, currentSize);
+    }
+  </script>
+</body>
+</html>

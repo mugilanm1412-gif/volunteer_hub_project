@@ -39,6 +39,7 @@ public class AttendanceService {
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final com.volunteerhub.repository.NgoProfileRepository ngoProfileRepository;
+    private final com.volunteerhub.repository.VolunteerRatingRepository volunteerRatingRepository;
     private final AuditLogService auditLogService;
     private final NotificationService notificationService;
 
@@ -47,6 +48,7 @@ public class AttendanceService {
                              ApplicationRepository applicationRepository,
                              UserRepository userRepository,
                              com.volunteerhub.repository.NgoProfileRepository ngoProfileRepository,
+                             com.volunteerhub.repository.VolunteerRatingRepository volunteerRatingRepository,
                              AuditLogService auditLogService,
                              NotificationService notificationService) {
         this.attendanceRepository = attendanceRepository;
@@ -54,6 +56,7 @@ public class AttendanceService {
         this.applicationRepository = applicationRepository;
         this.userRepository = userRepository;
         this.ngoProfileRepository = ngoProfileRepository;
+        this.volunteerRatingRepository = volunteerRatingRepository;
         this.auditLogService = auditLogService;
         this.notificationService = notificationService;
     }
@@ -291,7 +294,7 @@ public class AttendanceService {
         User vol = app.getVolunteer();
         Event ev = app.getEvent();
 
-        return new AttendanceResponseDto(
+        AttendanceResponseDto dto = new AttendanceResponseDto(
                 a.getId(),
                 app.getId(),
                 vol.getId(),
@@ -304,6 +307,24 @@ public class AttendanceService {
                 a.getCreatedAt(),
                 a.getRejectReason()
         );
+
+        volunteerRatingRepository.findByAttendanceId(a.getId()).ifPresent(r -> {
+            dto.setRating(new VolunteerRatingDto(
+                    r.getId(),
+                    a.getId(),
+                    ev.getId(),
+                    ev.getTitle(),
+                    ev.getNgo() != null ? ev.getNgo().getEmail() : "NGO",
+                    r.getPunctuality(),
+                    r.getTeamwork(),
+                    r.getEffort(),
+                    r.getAverageScore(),
+                    r.getComment(),
+                    r.getCreatedAt()
+            ));
+        });
+
+        return dto;
     }
 
     private VolunteerAttendanceDto mapToVolunteerAttendanceDto(Attendance a) {

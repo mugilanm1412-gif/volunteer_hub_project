@@ -51,6 +51,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
                                                @Param("today") LocalDate today,
                                                Pageable pageable);
 
+    @Query("SELECT COUNT(a) FROM Application a " +
+           "WHERE a.volunteer.id = :volunteerId AND a.status = 'APPROVED' " +
+           "AND (a.event.eventDate < :today OR a.event.status = 'COMPLETED')")
+    int countCompletedApplications(@Param("volunteerId") Long volunteerId,
+                                   @Param("today") LocalDate today);
+
     @Query("SELECT a FROM Application a JOIN FETCH a.event e JOIN FETCH e.ngo n " +
            "WHERE a.volunteer.id = :volunteerId AND a.status = 'PENDING'")
     Page<Application> findPendingApplications(@Param("volunteerId") Long volunteerId,

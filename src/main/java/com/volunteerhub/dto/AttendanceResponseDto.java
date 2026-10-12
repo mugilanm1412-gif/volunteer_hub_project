@@ -129,4 +129,14 @@ public class AttendanceResponseDto {
     public void setRejectReason(String rejectReason) {
         this.rejectReason = rejectReason;
     }
+
+    private VolunteerRatingDto rating;
+
+    public VolunteerRatingDto getRating() {
+        return rating;
+    }
+
+    public void setRating(VolunteerRatingDto rating) {
+        this.rating = rating;
+    }
 }

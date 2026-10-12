@@ -42,7 +42,7 @@ function renderNavbar(container, user) {
       navLinksHtml = `
         <li><a href="/ngo-dashboard.html" class="nav-link ${currentPath.includes('ngo-dashboard') ? 'active' : ''}">Dashboard</a></li>
         <li><a href="/create-event.html" class="nav-link ${currentPath.includes('create-event') ? 'active' : ''}">+ New Event</a></li>
-        <li><a href="/attendance-management.html" class="nav-link ${currentPath.includes('attendance') ? 'active' : ''}">Attendance & Hours</a></li>
+        <li><a href="/attendance-management.html" class="nav-link ${currentPath.includes('attendance') ? 'active' : ''}">Attendance & Ratings</a></li>
         <li><a href="/leaderboard.html" class="nav-link ${currentPath.includes('leaderboard') ? 'active' : ''}">Leaderboard</a></li>
       `;
     } else if (user.role === 'ADMIN') {

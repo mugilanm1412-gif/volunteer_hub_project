@@ -764,5 +764,198 @@ When an error occurs, all endpoints return a consistent JSON payload:
   - `403 Forbidden`: Authenticated NGO does not own the event associated with this attendance record.
   - `404 Not Found`: Attendance record does not exist.
 
+---
 
+## 9. Volunteer Ratings (`/api/attendance/{id}/rating`, `/api/volunteers/me/ratings`)
 
+### 9.1 Rate Volunteer Attendance Shift
+- **Method:** `POST`
+- **URL:** `/api/attendance/{id}/rating`
+- **Required Role:** `NGO` (Owner of the event)
+- **Rules:**
+  - Only the owning NGO of the event hosting the attendance record can submit a rating.
+  - Ratings can only be submitted for volunteers marked `PRESENT` (refused with `400 Bad Request` if `ABSENT`).
+  - Exactly one rating per attendance record (enforced by DB unique constraint on `attendance_id` and service check; duplicate submission returns `409 Conflict`).
+  - Ratings require integer scores between 1 and 5 for:
+    - `punctuality`: 1 to 5
+    - `teamwork`: 1 to 5
+    - `effort`: 1 to 5
+  - `comment` is optional (up to 1000 characters).
+  - On rating creation, an in-app notification (`RATING_RECEIVED`) is delivered to the volunteer.
+- **Request Body:**
+  ```json
+  {
+    "punctuality": 5,
+    "teamwork": 4,
+    "effort": 5,
+    "comment": "Outstanding initiative and team leadership throughout the cleanup drive."
+  }
+  ```
+- **Success Status:** `201 Created`
+- **Response Body:**
+  ```json
+  {
+    "id": 1,
+    "attendanceId": 12,
+    "eventId": 2,
+    "eventTitle": "Urban Reforestation & Sapling Care",
+    "ngoName": "Green Earth Foundation",
+    "punctuality": 5,
+    "teamwork": 4,
+    "effort": 5,
+    "averageScore": 4.67,
+    "comment": "Outstanding initiative and team leadership throughout the cleanup drive.",
+    "createdAt": "2026-10-12T19:00:00Z"
+  }
+  ```
+- **Error Responses:**
+  - `400 Bad Request`: Score values outside 1–5 range, or volunteer was marked `ABSENT`.
+  - `403 Forbidden`: Authenticated user is not the owning NGO.
+  - `404 Not Found`: Attendance record does not exist.
+  - `409 Conflict`: Rating already exists for this attendance record.
+
+### 9.2 Get Volunteer Ratings History
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/ratings`
+- **Required Role:** `VOLUNTEER`
+- **Rules:**
+  - Returns all performance evaluations and feedback comments received by the authenticated volunteer.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  [
+    {
+      "id": 1,
+      "attendanceId": 12,
+      "eventId": 2,
+      "eventTitle": "Urban Reforestation & Sapling Care",
+      "ngoName": "Green Earth Foundation",
+      "punctuality": 5,
+      "teamwork": 4,
+      "effort": 5,
+      "averageScore": 4.67,
+      "comment": "Outstanding initiative and team leadership throughout the cleanup drive.",
+      "createdAt": "2026-10-12T19:00:00Z"
+    }
+  ]
+  ```
+
+---
+
+## 10. Performance Dashboard, Leaderboard & Reports (`/api/volunteers/me/performance`, `/api/leaderboard`)
+
+### 10.1 Get Volunteer Performance Summary
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/performance`
+- **Required Role:** `VOLUNTEER`
+- **Rules:**
+  - Aggregates verified hours, attendance records, and evaluations dynamically at query time using `PerformanceCalculator`.
+  - Zero computed data is stored in the database.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "totalVerifiedHours": 44.0,
+    "completedEvents": 8,
+    "registeredCompletedEvents": 10,
+    "attendanceRate": 80.0,
+    "averageRating": 4.67,
+    "hoursScore": 44.0,
+    "attendanceScore": 80.0,
+    "ratingScore": 93.4,
+    "performanceScore": 69.62,
+    "badge": "SILVER",
+    "showOnLeaderboard": true
+  }
+  ```
+
+### 10.2 Get Performance Progress Over Time
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/performance/progress?granularity=week|month`
+- **Required Role:** `VOLUNTEER`
+- **Parameters:**
+  - `granularity`: `week` or `month` (default: `month`)
+- **Rules:**
+  - Returns chronological time series of approved, verified service hours for the volunteer.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  [
+    {
+      "period": "2026-09",
+      "hours": 16.0
+    },
+    {
+      "period": "2026-10",
+      "hours": 28.0
+    }
+  ]
+  ```
+
+### 10.3 Update Leaderboard Visibility
+- **Method:** `PATCH`
+- **URL:** `/api/volunteers/me/leaderboard-visibility`
+- **Required Role:** `VOLUNTEER`
+- **Request Body:**
+  ```json
+  {
+    "showOnLeaderboard": false
+  }
+  ```
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "showOnLeaderboard": false,
+    "message": "Leaderboard visibility preference updated successfully."
+  }
+  ```
+
+### 10.4 Get Public Leaderboard
+- **Method:** `GET`
+- **URL:** `/api/leaderboard?page=0&size=10`
+- **Required Role:** Public / Authenticated
+- **Rules:**
+  - Ranks volunteers by composite performance score descending, then verified hours descending.
+  - Strictly filters out volunteers with `showOnLeaderboard = false` or inactive user accounts.
+  - Never exposes email, phone number, address, or other sensitive volunteer information.
+  - Only returns `rank`, `displayName`, `score`, `badge`, and `verifiedHours`.
+- **Success Status:** `200 OK`
+- **Response Body:**
+  ```json
+  {
+    "content": [
+      {
+        "rank": 1,
+        "displayName": "Alice Smith",
+        "score": 88.5,
+        "badge": "GOLD",
+        "verifiedHours": 54.0
+      },
+      {
+        "rank": 2,
+        "displayName": "Bob Johnson",
+        "score": 72.0,
+        "badge": "SILVER",
+        "verifiedHours": 24.0
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 2,
+    "totalPages": 1,
+    "last": true
+  }
+  ```
+
+### 10.5 Download Volunteer Performance PDF Report
+- **Method:** `GET`
+- **URL:** `/api/volunteers/me/performance/report.pdf`
+- **Required Role:** `VOLUNTEER`
+- **Rules:**
+  - Generates an official, styled performance report document via OpenPDF.
+  - Restricted strictly to the authenticated volunteer's own verified data.
+- **Success Status:** `200 OK`
+- **Response Headers:**
+  - `Content-Type: application/pdf`
+  - `Content-Disposition: attachment; filename="volunteer-performance-report.pdf"`

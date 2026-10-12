@@ -143,22 +143,32 @@
         </div>
       </div>
 
-      <!-- Reserved for Phase 5: Volunteer Ratings -->
-      <div class="card" style="margin-top: 2rem; border-style: dashed; background-color: var(--neutral-50);">
+      <!-- Volunteer Ratings Information & Quick Guide -->
+      <div class="card" style="margin-top: 2rem; border-color: var(--primary-200); background-color: rgba(15, 118, 110, 0.02);">
         <div class="card-header" style="background: transparent;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span style="font-size: 1.25rem;">⭐</span>
-            <h3 style="margin: 0; font-size: 1.15rem; color: var(--neutral-700);">Volunteer Ratings & Performance Feedback</h3>
-            <span class="badge badge-neutral" style="font-size: 0.7rem;">Coming in Phase 5</span>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--neutral-800);">Volunteer Performance Ratings & Feedback</h3>
+            <span class="badge badge-success" style="font-size: 0.7rem;">Active</span>
           </div>
         </div>
         <div class="card-body">
-          <p style="color: var(--neutral-500); margin: 0; font-size: 0.95rem;">
-            Once volunteer attendance and hours are verified, organizers will be able to submit performance ratings (Punctuality, Teamwork, Effort rated 1–5 stars) to calculate community badges and leaderboard standings.
+          <p style="color: var(--neutral-600); margin: 0 0 0.75rem 0; font-size: 0.95rem;">
+            Recognize and evaluate volunteers who participated (PRESENT) in your initiative. Ratings for <strong>Punctuality</strong>, <strong>Teamwork</strong>, and <strong>Effort</strong> (1–5 scale) are dynamically calculated into each volunteer's community performance score and tier badges (Gold, Silver, Bronze).
           </p>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--neutral-700);">
+            <div style="background: #ffffff; padding: 0.5rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--neutral-200);">
+              ⏱️ <strong>Punctuality:</strong> Shift arrival, readiness, shift attendance
+            </div>
+            <div style="background: #ffffff; padding: 0.5rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--neutral-200);">
+              🤝 <strong>Teamwork:</strong> Cooperation, peer support, positive attitude
+            </div>
+            <div style="background: #ffffff; padding: 0.5rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--neutral-200);">
+              💪 <strong>Effort:</strong> Dedication, task completion, initiative
+            </div>
+          </div>
         </div>
       </div>
-      <!-- End Reserved for Phase 5 -->
     </div>
 
     <!-- Empty state when no event is selected -->
@@ -192,6 +202,63 @@
         <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
         <button type="button" class="btn btn-danger" id="btn-confirm-reject" onclick="confirmHoursRejection()">
           Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Modal -->
+  <div id="rating-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="rating-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="rating-modal-title">Rate Volunteer Performance</h3>
+        <button type="button" class="modal-close-btn" onclick="closeRatingModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.95rem; color: var(--neutral-700); margin-bottom: 1rem;">
+          Rate shift performance for <strong id="rating-modal-vol-name">Volunteer</strong> on <strong id="rating-modal-event-title">Event</strong>.
+        </p>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="rating-punctuality" class="form-label required">Punctuality (1–5)</label>
+          <select id="rating-punctuality" class="form-select">
+            <option value="5" selected>⭐⭐⭐⭐⭐ 5 - Exceptional (Early / On-time & Ready)</option>
+            <option value="4">⭐⭐⭐⭐ 4 - Very Good (Prompt Arrival)</option>
+            <option value="3">⭐⭐⭐ 3 - Good (Met Scheduled Time)</option>
+            <option value="2">⭐⭐ 2 - Fair (Slightly Late)</option>
+            <option value="1">⭐ 1 - Poor (Significantly Tardy)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="rating-teamwork" class="form-label required">Teamwork & Collaboration (1–5)</label>
+          <select id="rating-teamwork" class="form-select">
+            <option value="5" selected>⭐⭐⭐⭐⭐ 5 - Outstanding Collaboration & Peer Support</option>
+            <option value="4">⭐⭐⭐⭐ 4 - Great Team Player</option>
+            <option value="3">⭐⭐⭐ 3 - Cooperative & Friendly</option>
+            <option value="2">⭐⭐ 2 - Minimal Interaction</option>
+            <option value="1">⭐ 1 - Difficulty Collaborating</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="rating-effort" class="form-label required">Effort & Work Ethic (1–5)</label>
+          <select id="rating-effort" class="form-select">
+            <option value="5" selected>⭐⭐⭐⭐⭐ 5 - Exemplary Work Ethic & Strong Initiative</option>
+            <option value="4">⭐⭐⭐⭐ 4 - Hardworking & Reliable</option>
+            <option value="3">⭐⭐⭐ 3 - Completed Assigned Tasks</option>
+            <option value="2">⭐⭐ 2 - Inconsistent Effort</option>
+            <option value="1">⭐ 1 - Minimal Effort</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+          <label for="rating-comment" class="form-label">Feedback / Notes (Optional)</label>
+          <textarea id="rating-comment" class="form-control" rows="3" maxlength="1000" placeholder="Add specific feedback celebrating their contribution or notes for future organizers..."></textarea>
+          <span style="font-size: 0.75rem; color: var(--neutral-400); display: block; text-align: right; margin-top: 0.25rem;">Max 1,000 characters</span>
+        </div>
+        <div id="rating-modal-error" class="alert alert-danger" style="display: none; margin-top: 0.75rem;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeRatingModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-submit-rating" onclick="submitVolunteerRating()">
+          Submit Rating
         </button>
       </div>
     </div>
@@ -455,11 +522,12 @@
         <table class="table" id="roster-table">
           <thead>
             <tr>
-              <th style="width: 25%;">Volunteer</th>
-              <th style="width: 20%;">Attendance</th>
-              <th style="width: 18%;">Shift Hours</th>
-              <th style="width: 17%;">Hours Status</th>
-              <th style="width: 20%; text-align: right;">Review Actions</th>
+              <th style="width: 22%;">Volunteer</th>
+              <th style="width: 14%;">Attendance</th>
+              <th style="width: 14%;">Shift Hours</th>
+              <th style="width: 14%;">Hours Status</th>
+              <th style="width: 18%;">Rating & Feedback</th>
+              <th style="width: 18%; text-align: right;">Review Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -509,6 +577,29 @@
             `;
           }
 
+          let ratingCellHtml = '';
+          if (isPresent) {
+            if (att.rating) {
+              ratingCellHtml = `
+                <div>
+                  <span class="badge badge-warning" style="font-size: 0.75rem;">⭐ ${parseFloat(att.rating.averageScore).toFixed(2)} / 5</span>
+                  <div style="font-size: 0.72rem; color: var(--neutral-600); margin-top: 0.15rem;" title="Punctuality: ${att.rating.punctuality}, Teamwork: ${att.rating.teamwork}, Effort: ${att.rating.effort}">
+                    P:${att.rating.punctuality} · T:${att.rating.teamwork} · E:${att.rating.effort}
+                  </div>
+                  ${att.rating.comment ? `<div style="font-size: 0.72rem; color: var(--neutral-500); font-style: italic; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(att.rating.comment)}">"${escapeHtml(att.rating.comment)}"</div>` : ''}
+                </div>
+              `;
+            } else {
+              ratingCellHtml = `
+                <button class="btn btn-outline btn-sm" onclick="openRatingModal(${att.id}, '${escapeHtml(app.volunteerName)}')">
+                  ⭐ Rate Shift
+                </button>
+              `;
+            }
+          } else {
+            ratingCellHtml = `<span style="font-size: 0.8rem; color: var(--neutral-400);">Absent (N/A)</span>`;
+          }
+
           tableHtml += `
             <tr class="${rowClass}">
               <td>
@@ -526,6 +617,9 @@
               </td>
               <td>
                 ${statusBadge}
+              </td>
+              <td>
+                ${ratingCellHtml}
               </td>
               <td style="text-align: right;">
                 ${actionsHtml}
@@ -563,6 +657,9 @@
               </td>
               <td>
                 <span class="badge badge-neutral">UNRECORDED</span>
+              </td>
+              <td>
+                <span style="font-size: 0.8rem; color: var(--neutral-400);">Pending Save</span>
               </td>
               <td style="text-align: right; color: var(--neutral-400); font-size: 0.85rem;">
                 Pending Batch Save
@@ -723,6 +820,66 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Confirm Rejection';
+      }
+    }
+
+    let pendingRatingAttendanceId = null;
+
+    function openRatingModal(attendanceId, volName) {
+      pendingRatingAttendanceId = attendanceId;
+      document.getElementById('rating-modal-vol-name').textContent = volName;
+      document.getElementById('rating-modal-event-title').textContent = selectedEvent ? selectedEvent.title : '';
+      document.getElementById('rating-punctuality').value = '5';
+      document.getElementById('rating-teamwork').value = '5';
+      document.getElementById('rating-effort').value = '5';
+      document.getElementById('rating-comment').value = '';
+      document.getElementById('rating-modal-error').style.display = 'none';
+
+      const modal = document.getElementById('rating-modal');
+      modal.classList.add('show');
+    }
+
+    function closeRatingModal() {
+      pendingRatingAttendanceId = null;
+      const modal = document.getElementById('rating-modal');
+      modal.classList.remove('show');
+    }
+
+    async function submitVolunteerRating() {
+      if (!pendingRatingAttendanceId) return;
+
+      const punctuality = parseInt(document.getElementById('rating-punctuality').value, 10);
+      const teamwork = parseInt(document.getElementById('rating-teamwork').value, 10);
+      const effort = parseInt(document.getElementById('rating-effort').value, 10);
+      const comment = document.getElementById('rating-comment').value.trim();
+
+      const errEl = document.getElementById('rating-modal-error');
+      errEl.style.display = 'none';
+
+      const btn = document.getElementById('btn-submit-rating');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      try {
+        await apiFetch(`/api/attendance/${pendingRatingAttendanceId}/rating`, {
+          method: 'POST',
+          body: {
+            punctuality,
+            teamwork,
+            effort,
+            comment: comment || null
+          }
+        });
+
+        showToast('Performance rating submitted successfully!', 'success');
+        closeRatingModal();
+        await loadEventRoster(selectedEvent.id);
+      } catch (err) {
+        errEl.textContent = err.message || 'Failed to submit rating.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit Rating';
       }
     }
   </script>

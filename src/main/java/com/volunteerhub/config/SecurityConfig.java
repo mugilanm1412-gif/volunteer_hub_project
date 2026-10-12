@@ -93,8 +93,8 @@ public class SecurityConfig {
                 // Public Authentication Endpoints
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // Public Event Endpoints (Listing and details)
-                .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/{id:[0-9]+}").permitAll()
+                // Public Event and Leaderboard Endpoints
+                .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/{id:[0-9]+}", "/api/leaderboard").permitAll()
 
                 // Role-Specific Endpoints
                 .requestMatchers("/api/volunteers/**").hasRole("VOLUNTEER")
