@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host a Volunteering Event - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content" style="max-width: 840px;">
+    <div class="page-header">
+      <div>
+        <h1 id="page-title">Host an Initiative</h1>
+        <p id="page-subtitle">Publish a volunteering event for community participation</p>
+      </div>
+      <div>
+        <a href="/events.html" class="btn btn-secondary btn-sm">&larr; Back to Events</a>
+      </div>
+    </div>
+
+    <!-- Verification Banner Warning (if not verified) -->
+    <div id="ngo-status-warning" style="display: none; margin-bottom: 1.5rem;"></div>
+
+    <div class="card">
+      <div class="card-body" style="padding: 2rem;">
+        <form id="event-form">
+          <div class="form-group">
+            <label class="form-label required" for="event-title">Event Title</label>
+            <input type="text" id="event-title" class="form-control" required maxlength="200"
+                   placeholder="e.g. Urban Reforestation & Sapling Care Drive">
+            <span class="form-text">Choose a descriptive and engaging title.</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+            <div class="form-group">
+              <label class="form-label required" for="event-category">Category</label>
+              <select id="event-category" class="form-select" required>
+                <option value="">Select a category</option>
+                <option value="Environment">Environment & Conservation</option>
+                <option value="Education">Education & Literacy</option>
+                <option value="Healthcare">Healthcare & Wellness</option>
+                <option value="Community Aid">Community Aid & Poverty Relief</option>
+                <option value="Animal Welfare">Animal Welfare & Shelter</option>
+                <option value="Disaster Relief">Disaster Relief & Emergency</option>
+                <option value="Youth & Children">Youth & Children</option>
+                <option value="Other">Other Community Cause</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required" for="event-capacity">Volunteer Capacity</label>
+              <input type="number" id="event-capacity" class="form-control" required min="1" max="10000" value="20">
+              <span class="form-text">Maximum approved participants.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="event-location">Location / Venue</label>
+            <input type="text" id="event-location" class="form-control" required maxlength="255"
+                   placeholder="e.g. Metro Green Belt Park, Sector 4, Eco City">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;">
+            <div class="form-group">
+              <label class="form-label required" for="event-date">Event Date</label>
+              <input type="date" id="event-date" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required" for="event-start-time">Start Time</label>
+              <input type="time" id="event-start-time" class="form-control" required value="09:00">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required" for="event-end-time">End Time</label>
+              <input type="time" id="event-end-time" class="form-control" required value="13:00">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="event-skills">Required Skills or Prerequisites</label>
+            <input type="text" id="event-skills" class="form-control"
+                   placeholder="e.g. Gardening, Team coordination, Enthusiasm (comma separated)">
+            <span class="form-text">Leave blank if no specific skills are needed.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="event-description">Detailed Description</label>
+            <textarea id="event-description" class="form-control" rows="5" required
+                      placeholder="Outline the schedule, what volunteers should bring, safety guidelines, and impact goals..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="event-status">Publication Status</label>
+            <select id="event-status" class="form-select" required>
+              <option value="PUBLISHED" selected>Published (Visible to Volunteers)</option>
+              <option value="DRAFT">Draft (Save privately)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--neutral-200); padding-top: 1.5rem;">
+            <a href="/events.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" id="btn-submit-event" class="btn btn-primary">
+              Publish Event
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-weight: 600;">Volunteer Hub &bull; Empowering Verified Impact</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let editEventId = null;
+    let currentUser = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set min date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('event-date').min = today;
+
+      // Check current user session & verification status
+      try {
+        currentUser = await apiFetch('/api/users/me');
+        if (currentUser.role !== 'NGO') {
+          showAccessBlocked('Access restricted. Only NGO organizations can host volunteering events.');
+          return;
+        }
+
+        // Fetch NGO profile to verify verification status
+        const ngoProfile = await apiFetch('/api/ngos/me/profile');
+        if (ngoProfile.verificationStatus !== 'VERIFIED') {
+          showNgoPendingBanner(ngoProfile.verificationStatus, ngoProfile.rejectionReason);
+        }
+      } catch (err) {
+        window.location.href = '/login.html?redirect=/create-event.html';
+        return;
+      }
+
+      // Check for edit mode
+      const params = new URLSearchParams(window.location.search);
+      editEventId = params.get('id');
+
+      if (editEventId) {
+        document.getElementById('page-title').textContent = 'Edit Event Details';
+        document.getElementById('page-subtitle').textContent = 'Update information for your published initiative';
+        document.getElementById('btn-submit-event').textContent = 'Update Event';
+        await loadExistingEvent(editEventId);
+      }
+
+      document.getElementById('event-form').addEventListener('submit', handleFormSubmit);
+    });
+
+    function showAccessBlocked(msg) {
+      const formCard = document.querySelector('.card');
+      formCard.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🔒</div>
+          <h3>${escapeHtml(msg)}</h3>
+          <p>Please log in with an authorized NGO organization account.</p>
+          <a href="/login.html" class="btn btn-primary" style="margin-top: 1rem;">Log In</a>
+        </div>
+      `;
+    }
+
+    function showNgoPendingBanner(status, reason) {
+      const banner = document.getElementById('ngo-status-warning');
+      const submitBtn = document.getElementById('btn-submit-event');
+
+      if (status === 'PENDING') {
+        banner.className = 'alert alert-warning';
+        banner.innerHTML = `
+          <strong>Account Pending Administrator Verification:</strong>
+          Your NGO profile is currently under review by our platform administrators.
+          You may draft your event, but publishing events requires verified credentials.
+        `;
+        banner.style.display = 'block';
+      } else if (status === 'REJECTED') {
+        banner.className = 'alert alert-danger';
+        banner.innerHTML = `
+          <strong>Verification Declined:</strong>
+          Your NGO organization application was declined by administrators. Reason: "${escapeHtml(reason || 'Incomplete registration documents')}".
+          Event creation is disabled.
+        `;
+        banner.style.display = 'block';
+        if (submitBtn) submitBtn.disabled = true;
+      }
+    }
+
+    async function loadExistingEvent(id) {
+      try {
+        const ev = await apiFetch(`/api/events/${id}`);
+        document.getElementById('event-title').value = ev.title || '';
+        document.getElementById('event-category').value = ev.category || '';
+        document.getElementById('event-capacity').value = ev.capacity || 20;
+        document.getElementById('event-location').value = ev.location || '';
+        document.getElementById('event-date').value = ev.eventDate || '';
+        document.getElementById('event-start-time').value = ev.startTime ? ev.startTime.substring(0, 5) : '09:00';
+        document.getElementById('event-end-time').value = ev.endTime ? ev.endTime.substring(0, 5) : '13:00';
+        document.getElementById('event-skills').value = ev.requiredSkills || '';
+        document.getElementById('event-description').value = ev.description || '';
+        document.getElementById('event-status').value = ev.status || 'PUBLISHED';
+      } catch (err) {
+        showToast('Failed to load event details: ' + err.message, 'danger');
+      }
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const startTime = document.getElementById('event-start-time').value;
+      const endTime = document.getElementById('event-end-time').value;
+
+      if (startTime >= endTime) {
+        showToast('End time must be later than start time', 'danger');
+        return;
+      }
+
+      const payload = {
+        title: document.getElementById('event-title').value.trim(),
+        category: document.getElementById('event-category').value,
+        capacity: parseInt(document.getElementById('event-capacity').value, 10),
+        location: document.getElementById('event-location').value.trim(),
+        eventDate: document.getElementById('event-date').value,
+        startTime: startTime.length === 5 ? startTime + ':00' : startTime,
+        endTime: endTime.length === 5 ? endTime + ':00' : endTime,
+        requiredSkills: document.getElementById('event-skills').value.trim(),
+        description: document.getElementById('event-description').value.trim(),
+        status: document.getElementById('event-status').value
+      };
+
+      const submitBtn = document.getElementById('btn-submit-event');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+      try {
+        let result = null;
+        if (editEventId) {
+          result = await apiFetch(`/api/events/${editEventId}`, {
+            method: 'PUT',
+            body: payload
+          });
+          showToast('Event updated successfully!', 'success');
+        } else {
+          result = await apiFetch('/api/events', {
+            method: 'POST',
+            body: payload
+          });
+          showToast('Event published successfully!', 'success');
+        }
+
+        setTimeout(() => {
+          window.location.href = `/event-details.html?id=${result.id}`;
+        }, 600);
+      } catch (err) {
+        showToast(err.message || 'Failed to save event', 'danger');
+        submitBtn.disabled = false;
+        submitBtn.textContent = editEventId ? 'Update Event' : 'Publish Event';
+      }
+    }
+  </script>
+</body>
+</html>

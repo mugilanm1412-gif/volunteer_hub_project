@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin NGO Verification - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>NGO Verification & Governance</h1>
+        <p>Review organization registration credentials and grant event publishing privileges</p>
+      </div>
+      <div>
+        <a href="/events.html" class="btn btn-secondary btn-sm">View All Events</a>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-status="PENDING" onclick="filterStatus('PENDING')">
+        Pending Verification
+      </button>
+      <button class="tab-btn" data-status="VERIFIED" onclick="filterStatus('VERIFIED')">
+        Verified Organizations
+      </button>
+      <button class="tab-btn" data-status="REJECTED" onclick="filterStatus('REJECTED')">
+        Declined Applications
+      </button>
+      <button class="tab-btn" data-status="" onclick="filterStatus('')">
+        All NGOs
+      </button>
+    </div>
+
+    <!-- NGOs Table / Card List -->
+    <div class="card">
+      <div class="card-body" style="padding: 0;">
+        <div id="ngos-table-container" class="table-responsive">
+          <div style="text-align: center; padding: 3rem;">
+            <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+            <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading organizations...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Rejection Modal -->
+  <div id="reject-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Decline NGO Application</h3>
+        <button type="button" class="modal-close-btn" onclick="closeRejectModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--neutral-600); margin-bottom: 1rem;">
+          Please state the reason for declining this organization's verification request. The contact person will see this feedback.
+        </p>
+        <div class="form-group">
+          <label class="form-label required" for="rejection-reason">Reason for Rejection</label>
+          <textarea id="rejection-reason" class="form-control" rows="3" required
+                    placeholder="e.g. Official registration certificate is unreadable or expired..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeRejectModal()">Cancel</button>
+        <button type="button" id="btn-confirm-reject" class="btn btn-danger btn-sm">Confirm Rejection</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-weight: 600;">Volunteer Hub &bull; Empowering Verified Impact</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let currentFilter = 'PENDING';
+    let targetNgoId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const user = await apiFetch('/api/users/me');
+        if (user.role !== 'ADMIN') {
+          showNotAdmin();
+          return;
+        }
+      } catch (err) {
+        window.location.href = '/login.html?redirect=/admin-dashboard.html';
+        return;
+      }
+
+      loadNgos(currentFilter);
+    });
+
+    function showNotAdmin() {
+      const container = document.getElementById('ngos-table-container');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🛡️</div>
+          <h3>Administrator Clearance Required</h3>
+          <p>This verification console is restricted to authorized platform administrators.</p>
+          <a href="/login.html" class="btn btn-primary" style="margin-top: 1rem;">Log In as Administrator</a>
+        </div>
+      `;
+    }
+
+    function filterStatus(status) {
+      currentFilter = status;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.status === status);
+      });
+      loadNgos(status);
+    }
+
+    async function loadNgos(status) {
+      const container = document.getElementById('ngos-table-container');
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem;">
+          <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+          <p style="margin-top: 0.5rem; color: var(--neutral-500);">Fetching NGOs...</p>
+        </div>
+      `;
+
+      try {
+        const url = status ? `/api/admin/ngos?status=${encodeURIComponent(status)}` : '/api/admin/ngos';
+        const ngos = await apiFetch(url);
+
+        if (!ngos || ngos.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">🏢</div>
+              <h3>No Organizations in this Category</h3>
+              <p>There are currently no NGOs matching the selected verification status filter.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Organization</th>
+                <th>Registration #</th>
+                <th>Cause & Mission</th>
+                <th>Contact Details</th>
+                <th>Status</th>
+                <th style="text-align: right;">Review Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ngos.map(ngo => {
+                let badgeClass = 'badge-warning';
+                if (ngo.verificationStatus === 'VERIFIED') badgeClass = 'badge-success';
+                else if (ngo.verificationStatus === 'REJECTED') badgeClass = 'badge-danger';
+
+                return `
+                  <tr>
+                    <td>
+                      <div style="font-weight: 700; color: var(--neutral-900);">${escapeHtml(ngo.name)}</div>
+                      <div style="font-size: 0.8rem; color: var(--neutral-500);">${escapeHtml(ngo.address || '')}</div>
+                    </td>
+                    <td>
+                      <span class="badge badge-neutral" style="font-family: monospace; font-size: 0.75rem;">
+                        ${escapeHtml(ngo.registrationNumber || 'N/A')}
+                      </span>
+                    </td>
+                    <td style="max-width: 240px;">
+                      <span class="badge badge-info" style="margin-bottom: 0.25rem;">${escapeHtml(ngo.cause || 'Community')}</span>
+                      <p style="font-size: 0.85rem; color: var(--neutral-600); margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${escapeHtml(ngo.description || '')}
+                      </p>
+                    </td>
+                    <td>
+                      <div style="font-size: 0.85rem;">
+                        <div style="font-weight: 500;">${escapeHtml(ngo.contactPerson || 'Contact')}</div>
+                        <div style="color: var(--neutral-600);">${escapeHtml(ngo.email || '')}</div>
+                        <div style="color: var(--neutral-500);">${escapeHtml(ngo.contactPhone || '')}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge ${badgeClass}">${ngo.verificationStatus}</span>
+                      ${ngo.rejectionReason ? `
+                        <div style="font-size: 0.75rem; color: #dc2626; margin-top: 0.25rem;">
+                          ${escapeHtml(ngo.rejectionReason)}
+                        </div>
+                      ` : ''}
+                    </td>
+                    <td style="text-align: right;">
+                      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        ${ngo.verificationStatus !== 'VERIFIED' ? `
+                          <button class="btn btn-primary btn-sm" onclick="verifyNgo(${ngo.id})">
+                            ✓ Approve
+                          </button>
+                        ` : ''}
+                        ${ngo.verificationStatus !== 'REJECTED' ? `
+                          <button class="btn btn-secondary btn-sm" style="color: #dc2626;" onclick="openRejectModal(${ngo.id})">
+                            ✕ Decline
+                          </button>
+                        ` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        container.innerHTML = `
+          <div class="alert alert-danger" style="margin: 1.5rem;">
+            Failed to load NGO records: ${escapeHtml(err.message)}
+          </div>
+        `;
+      }
+    }
+
+    async function verifyNgo(id) {
+      if (!confirm('Approve this NGO organization? This will enable them to publish volunteering events.')) {
+        return;
+      }
+
+      try {
+        await apiFetch(`/api/admin/ngos/${id}/verification`, {
+          method: 'PATCH',
+          body: {
+            status: 'VERIFIED'
+          }
+        });
+        showToast('NGO organization verified successfully!', 'success');
+        loadNgos(currentFilter);
+      } catch (err) {
+        showToast(err.message || 'Failed to verify NGO', 'danger');
+      }
+    }
+
+    function openRejectModal(id) {
+      targetNgoId = id;
+      document.getElementById('rejection-reason').value = '';
+      document.getElementById('reject-modal').classList.add('show');
+    }
+
+    function closeRejectModal() {
+      document.getElementById('reject-modal').classList.remove('show');
+      targetNgoId = null;
+    }
+
+    document.getElementById('btn-confirm-reject').addEventListener('click', async () => {
+      const reason = document.getElementById('rejection-reason').value.trim();
+      if (!reason) {
+        showToast('Please provide a reason for declining the organization', 'warning');
+        return;
+      }
+
+      try {
+        await apiFetch(`/api/admin/ngos/${targetNgoId}/verification`, {
+          method: 'PATCH',
+          body: {
+            status: 'REJECTED',
+            rejectionReason: reason
+          }
+        });
+        closeRejectModal();
+        showToast('NGO application declined', 'info');
+        loadNgos(currentFilter);
+      } catch (err) {
+        showToast(err.message || 'Failed to update NGO status', 'danger');
+      }
+    });
+  </script>
+</body>
+</html>

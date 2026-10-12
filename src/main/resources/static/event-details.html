@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Details - Volunteer Hub</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+  <!-- Dynamic Navigation Bar -->
+  <nav id="app-nav" class="app-navbar"></nav>
+
+  <main class="main-content">
+    <div style="margin-bottom: 1.5rem;">
+      <a href="/events.html" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 500; color: var(--neutral-600); text-decoration: none;">
+        &larr; Back to all opportunities
+      </a>
+    </div>
+
+    <div id="event-loading" style="text-align: center; padding: 4rem;">
+      <span class="spinner" style="border-top-color: var(--primary-700);"></span>
+      <p style="margin-top: 0.5rem; color: var(--neutral-500);">Loading event details...</p>
+    </div>
+
+    <div id="event-error" style="display: none;" class="alert alert-danger"></div>
+
+    <div id="event-content" style="display: none;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start;">
+        <!-- Left: Main Details -->
+        <div>
+          <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-body" style="padding: 2rem;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                <span id="event-category-badge" class="badge badge-info"></span>
+                <span id="event-status-badge" class="badge"></span>
+              </div>
+
+              <h1 id="event-title" style="font-size: 2rem; margin-bottom: 0.5rem;"></h1>
+              <p id="event-ngo-name" style="font-size: 1.05rem; color: var(--primary-700); font-weight: 600; margin-bottom: 1.5rem;"></p>
+
+              <!-- Meta Grid -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: var(--neutral-50); border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 2rem;">
+                <div>
+                  <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--neutral-500); font-weight: 700; display: block; margin-bottom: 0.25rem;">Date & Time</span>
+                  <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 600; color: var(--neutral-800);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span id="event-date-time"></span>
+                  </div>
+                </div>
+
+                <div>
+                  <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--neutral-500); font-weight: 700; display: block; margin-bottom: 0.25rem;">Location</span>
+                  <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 600; color: var(--neutral-800);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span id="event-location"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Full Description -->
+              <h3 style="margin-bottom: 0.75rem;">About this Initiative</h3>
+              <p id="event-description" style="color: var(--neutral-700); font-size: 1.05rem; line-height: 1.7; white-space: pre-line; margin-bottom: 2rem;"></p>
+
+              <!-- Required Skills -->
+              <h4 style="margin-bottom: 0.5rem;">Skills & Requirements</h4>
+              <div id="event-skills" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;"></div>
+
+              <!-- Organizer Details -->
+              <div style="border-top: 1px solid var(--neutral-200); padding-top: 1.5rem; margin-top: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem;">Organizer Information</h4>
+                <p id="event-organizer-contact" style="color: var(--neutral-600); margin: 0; font-size: 0.95rem;"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- NGO Owner Management: Applications List -->
+          <div id="ngo-applications-section" class="card" style="display: none; margin-bottom: 2rem;">
+            <div class="card-header">
+              <h3 style="margin: 0; font-size: 1.15rem;">Registered Volunteer Applications</h3>
+              <span id="ngo-apps-count-badge" class="badge badge-neutral"></span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div id="ngo-apps-table-container" class="table-responsive">
+                <div style="text-align: center; padding: 2rem;">
+                  <span class="spinner"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Action / Registration Sidebar -->
+        <div>
+          <!-- Volunteer Application Card -->
+          <div class="card" style="margin-bottom: 1.5rem; position: sticky; top: 80px;">
+            <div class="card-body">
+              <h3 style="margin-bottom: 0.75rem;">Participation Status</h3>
+
+              <!-- Capacity Progress -->
+              <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.4rem;">
+                  <span>Capacity Filled</span>
+                  <span id="capacity-text">0 / 0</span>
+                </div>
+                <div style="background-color: var(--neutral-200); border-radius: var(--radius-full); height: 10px; overflow: hidden;">
+                  <div id="capacity-bar" style="background-color: var(--primary-600); width: 0%; height: 100%; transition: width 0.3s ease;"></div>
+                </div>
+                <span id="capacity-subtext" style="display: block; font-size: 0.8rem; color: var(--neutral-500); margin-top: 0.4rem;"></span>
+              </div>
+
+              <!-- Dynamic Action Container -->
+              <div id="action-container"></div>
+            </div>
+
+            <!-- Organizer Action Bar (If Owner NGO) -->
+            <div id="organizer-actions" class="card-footer" style="display: none; flex-direction: column; gap: 0.5rem;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--neutral-500); margin-bottom: 0.25rem;">
+                Event Host Actions
+              </span>
+              <a id="btn-edit-event" href="#" class="btn btn-secondary btn-sm btn-block">Edit Details</a>
+              <button id="btn-complete-event" class="btn btn-outline btn-sm btn-block">Mark as Completed</button>
+              <button id="btn-cancel-event" class="btn btn-danger btn-sm btn-block">Cancel Event</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Cancel Event Modal for NGO -->
+  <div id="cancel-event-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Cancel Volunteer Event</h3>
+        <button type="button" class="modal-close-btn" onclick="closeCancelModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--neutral-600); margin-bottom: 1rem;">
+          Cancelling will notify all registered volunteers. This action cannot be undone.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="cancel-reason">Reason for Cancellation</label>
+          <textarea id="cancel-reason" class="form-control" rows="3" placeholder="e.g. Inclement weather conditions..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeCancelModal()">Keep Event</button>
+        <button type="button" id="btn-confirm-cancel-event" class="btn btn-danger btn-sm">Confirm Cancellation</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p style="margin: 0; font-weight: 600;">Volunteer Hub &bull; Empowering Verified Impact</p>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script>
+    let currentEvent = null;
+    let currentUser = null;
+    let eventId = null;
+    let userApplicationId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      eventId = urlParams.get('id');
+
+      if (!eventId) {
+        showError('No event ID provided in URL');
+        return;
+      }
+
+      try {
+        currentUser = await apiFetch('/api/users/me');
+      } catch (e) {
+        currentUser = null;
+      }
+
+      await loadEvent();
+    });
+
+    async function loadEvent() {
+      const loadingEl = document.getElementById('event-loading');
+      const contentEl = document.getElementById('event-content');
+      const errorEl = document.getElementById('event-error');
+
+      try {
+        loadingEl.style.display = 'block';
+        contentEl.style.display = 'none';
+        errorEl.style.display = 'none';
+
+        currentEvent = await apiFetch(`/api/events/${eventId}`);
+        renderEventDetails();
+
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+        // If current user is NGO and owner, load applications list
+        if (currentUser && currentUser.role === 'NGO') {
+          // Check if this NGO created this event
+          loadNgoApplications();
+        }
+      } catch (err) {
+        loadingEl.style.display = 'none';
+        showError(err.message || 'Failed to load event details');
+      }
+    }
+
+    function renderEventDetails() {
+      const ev = currentEvent;
+
+      document.getElementById('event-title').textContent = ev.title;
+      document.getElementById('event-ngo-name').textContent = `Organized by ${ev.ngoName}`;
+      document.getElementById('event-description').textContent = ev.description;
+      document.getElementById('event-location').textContent = ev.location;
+
+      // Category badge
+      document.getElementById('event-category-badge').textContent = ev.category || 'General';
+
+      // Status badge
+      const statusBadge = document.getElementById('event-status-badge');
+      statusBadge.textContent = ev.status;
+      if (ev.status === 'PUBLISHED') statusBadge.className = 'badge badge-success';
+      else if (ev.status === 'CANCELLED') statusBadge.className = 'badge badge-danger';
+      else if (ev.status === 'COMPLETED') statusBadge.className = 'badge badge-neutral';
+      else statusBadge.className = 'badge badge-warning';
+
+      // Date & Time
+      const formattedDate = new Date(ev.eventDate + 'T00:00:00').toLocaleDateString(undefined, {
+        weekday: 'short', month: 'long', day: 'numeric', year: 'numeric'
+      });
+      const timeStr = ev.startTime && ev.endTime ? `${ev.startTime.substring(0, 5)} - ${ev.endTime.substring(0, 5)}` : '';
+      document.getElementById('event-date-time').textContent = `${formattedDate} (${timeStr})`;
+
+      // Skills
+      const skillsContainer = document.getElementById('event-skills');
+      if (ev.requiredSkills) {
+        skillsContainer.innerHTML = ev.requiredSkills.split(',')
+          .map(s => `<span class="badge badge-neutral">${escapeHtml(s.trim())}</span>`)
+          .join('');
+      } else {
+        skillsContainer.innerHTML = '<span style="color: var(--neutral-500); font-size: 0.9rem;">No specific skills required. Everyone welcome!</span>';
+      }
+
+      // Organizer Contact
+      const contactInfo = [];
+      if (ev.ngoContactPerson) contactInfo.push(`Contact: ${escapeHtml(ev.ngoContactPerson)}`);
+      if (ev.ngoContactPhone) contactInfo.push(`Phone: ${escapeHtml(ev.ngoContactPhone)}`);
+      document.getElementById('event-organizer-contact').textContent = contactInfo.length > 0
+        ? contactInfo.join(' | ')
+        : 'Contact information available upon confirmed participation.';
+
+      // Capacity & Progress
+      const approved = ev.approvedCount || 0;
+      const capacity = ev.capacity || 1;
+      const remaining = ev.remainingSlots !== undefined ? ev.remainingSlots : Math.max(0, capacity - approved);
+      const pct = Math.min(100, Math.round((approved / capacity) * 100));
+
+      document.getElementById('capacity-text').textContent = `${approved} / ${capacity} spots`;
+      document.getElementById('capacity-bar').style.width = `${pct}%`;
+      document.getElementById('capacity-subtext').textContent = `${remaining} spot${remaining === 1 ? '' : 's'} remaining`;
+
+      // Render Dynamic Action Box
+      renderActionBox(remaining);
+    }
+
+    async function renderActionBox(remainingSlots) {
+      const box = document.getElementById('action-container');
+      const organizerActions = document.getElementById('organizer-actions');
+      const ev = currentEvent;
+
+      // 1. Unauthenticated Visitor
+      if (!currentUser) {
+        box.innerHTML = `
+          <div class="alert alert-info" style="margin-bottom: 1rem; font-size: 0.9rem;">
+            Join Volunteer Hub to participate in verified initiatives and track your hours.
+          </div>
+          <a href="/login.html?redirect=/event-details.html?id=${ev.id}" class="btn btn-primary btn-block">
+            Log In to Register
+          </a>
+          <a href="/register.html" class="btn btn-outline btn-block" style="margin-top: 0.5rem;">
+            Create an Account
+          </a>
+        `;
+        return;
+      }
+
+      // 2. NGO User (Check if Owner)
+      if (currentUser.role === 'NGO') {
+        // We will know if owner by trying to get applications or matching
+        organizerActions.style.display = 'flex';
+        document.getElementById('btn-edit-event').href = `/create-event.html?id=${ev.id}`;
+
+        if (ev.status === 'CANCELLED' || ev.status === 'COMPLETED') {
+          organizerActions.style.display = 'none';
+        } else {
+          document.getElementById('btn-complete-event').onclick = completeEvent;
+          document.getElementById('btn-cancel-event').onclick = openCancelModal;
+        }
+
+        box.innerHTML = `
+          <div class="alert alert-info" style="margin: 0; font-size: 0.9rem;">
+            You are logged in as an NGO organization. Manage volunteer attendance and applications below.
+          </div>
+        `;
+        return;
+      }
+
+      // 3. ADMIN User
+      if (currentUser.role === 'ADMIN') {
+        box.innerHTML = `
+          <div class="alert alert-info" style="margin: 0; font-size: 0.9rem;">
+            Viewing in Administrator Mode.
+          </div>
+        `;
+        return;
+      }
+
+      // 4. VOLUNTEER User
+      const appStatus = ev.userApplicationStatus;
+
+      if (ev.status === 'CANCELLED') {
+        box.innerHTML = `
+          <div class="alert alert-danger" style="margin: 0;">
+            This event has been cancelled by the organizing NGO.
+          </div>
+        `;
+        return;
+      }
+
+      if (ev.status === 'COMPLETED') {
+        box.innerHTML = `
+          <div class="alert alert-neutral" style="margin: 0;">
+            This event has ended.
+          </div>
+        `;
+        return;
+      }
+
+      if (!appStatus) {
+        // Not registered yet
+        if (remainingSlots <= 0) {
+          box.innerHTML = `
+            <button class="btn btn-secondary btn-block" disabled>
+              Event Full (No Slots Available)
+            </button>
+          `;
+        } else {
+          box.innerHTML = `
+            <button id="btn-register" class="btn btn-primary btn-block btn-lg" onclick="registerForEvent()">
+              Register for this Event
+            </button>
+            <p style="font-size: 0.8rem; color: var(--neutral-500); text-align: center; margin-top: 0.75rem; margin-bottom: 0;">
+              Free registration &bull; Verifiable certificate upon completion
+            </p>
+          `;
+        }
+      } else {
+        // Already registered - fetch application id if not cached
+        await resolveVolunteerApplicationId();
+
+        let badgeClass = 'badge-warning';
+        let statusTitle = 'Application Submitted';
+        let statusMsg = 'Your registration is pending review by the organizing NGO.';
+
+        if (appStatus === 'APPROVED') {
+          badgeClass = 'badge-success';
+          statusTitle = 'Registration Confirmed!';
+          statusMsg = 'You are confirmed for this initiative. See you on event day!';
+        } else if (appStatus === 'REJECTED') {
+          badgeClass = 'badge-danger';
+          statusTitle = 'Registration Declined';
+          statusMsg = 'The organizer was unable to accept your application for this session.';
+        } else if (appStatus === 'CANCELLED') {
+          badgeClass = 'badge-neutral';
+          statusTitle = 'Registration Cancelled';
+          statusMsg = 'You previously cancelled your registration for this event.';
+        }
+
+        let cancelBtnHtml = '';
+        if ((appStatus === 'PENDING' || appStatus === 'APPROVED') && userApplicationId) {
+          cancelBtnHtml = `
+            <button class="btn btn-outline btn-sm btn-block" style="color: #dc2626; border-color: #dc2626; margin-top: 1rem;" onclick="cancelVolunteerApplication()">
+              Cancel My Registration
+            </button>
+          `;
+        }
+
+        box.innerHTML = `
+          <div style="border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 1rem; background-color: var(--neutral-50);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 700; font-size: 0.95rem;">${statusTitle}</span>
+              <span class="badge ${badgeClass}">${appStatus}</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--neutral-600); margin-bottom: 0;">
+              ${statusMsg}
+            </p>
+            ${cancelBtnHtml}
+          </div>
+        `;
+      }
+    }
+
+    async function resolveVolunteerApplicationId() {
+      if (userApplicationId) return;
+      try {
+        const apps = await apiFetch('/api/volunteers/me/applications?tab=all&size=100');
+        const match = apps.content.find(a => a.eventId === Number(eventId));
+        if (match) {
+          userApplicationId = match.id;
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+
+    async function registerForEvent() {
+      const btn = document.getElementById('btn-register');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Submitting...';
+      }
+
+      try {
+        const response = await apiFetch(`/api/events/${eventId}/applications`, {
+          method: 'POST'
+        });
+        showToast(response.message || 'Registration submitted successfully!', 'success');
+        userApplicationId = response.id;
+        await loadEvent();
+      } catch (err) {
+        showToast(err.message || 'Failed to register', 'danger');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Register for this Event';
+        }
+      }
+    }
+
+    async function cancelVolunteerApplication() {
+      if (!confirm('Are you sure you want to cancel your registration for this event?')) {
+        return;
+      }
+
+      try {
+        if (!userApplicationId) await resolveVolunteerApplicationId();
+        await apiFetch(`/api/applications/${userApplicationId}/cancel`, {
+          method: 'POST'
+        });
+        showToast('Registration cancelled successfully', 'info');
+        await loadEvent();
+      } catch (err) {
+        showToast(err.message || 'Failed to cancel registration', 'danger');
+      }
+    }
+
+    async function loadNgoApplications() {
+      const section = document.getElementById('ngo-applications-section');
+      const container = document.getElementById('ngo-apps-table-container');
+      const countBadge = document.getElementById('ngo-apps-count-badge');
+
+      try {
+        const applications = await apiFetch(`/api/events/${eventId}/applications`);
+        section.style.display = 'block';
+        countBadge.textContent = `${applications.length} Applicants`;
+
+        if (!applications || applications.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--neutral-500);">
+              No volunteer applications received yet.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Volunteer</th>
+                <th>Contact</th>
+                <th>Skills</th>
+                <th>Applied</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${applications.map(app => {
+                let badgeClass = 'badge-warning';
+                if (app.status === 'APPROVED') badgeClass = 'badge-success';
+                else if (app.status === 'REJECTED') badgeClass = 'badge-danger';
+                else if (app.status === 'CANCELLED') badgeClass = 'badge-neutral';
+
+                const appliedDate = new Date(app.appliedAt).toLocaleDateString(undefined, {
+                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                let actionBtns = '';
+                if (app.status === 'PENDING') {
+                  actionBtns = `
+                    <div style="display: flex; gap: 0.35rem;">
+                      <button class="btn btn-primary btn-sm" onclick="updateAppStatus(${app.id}, 'APPROVED')">
+                        Approve
+                      </button>
+                      <button class="btn btn-secondary btn-sm" style="color: #dc2626;" onclick="updateAppStatus(${app.id}, 'REJECTED')">
+                        Reject
+                      </button>
+                    </div>
+                  `;
+                } else {
+                  actionBtns = `<span style="font-size: 0.8rem; color: var(--neutral-400);">${app.status}</span>`;
+                }
+
+                return `
+                  <tr>
+                    <td>
+                      <strong>${escapeHtml(app.volunteerName || 'Volunteer #' + app.volunteerId)}</strong>
+                    </td>
+                    <td>
+                      <div style="font-size: 0.85rem;">
+                        <div>${escapeHtml(app.volunteerEmail || '')}</div>
+                        <div style="color: var(--neutral-500);">${escapeHtml(app.volunteerPhone || '')}</div>
+                      </div>
+                    </td>
+                    <td style="font-size: 0.85rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      ${escapeHtml(app.volunteerSkills || '—')}
+                    </td>
+                    <td style="font-size: 0.8rem; color: var(--neutral-500);">
+                      ${appliedDate}
+                    </td>
+                    <td>
+                      <span class="badge ${badgeClass}">${app.status}</span>
+                    </td>
+                    <td>
+                      ${actionBtns}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        // If not owner, endpoint returns 403, simply hide applications section
+        section.style.display = 'none';
+        document.getElementById('organizer-actions').style.display = 'none';
+      }
+    }
+
+    async function updateAppStatus(appId, newStatus) {
+      try {
+        await apiFetch(`/api/applications/${appId}/status`, {
+          method: 'PATCH',
+          body: { status: newStatus }
+        });
+        showToast(`Application marked as ${newStatus}`, 'success');
+        await loadEvent();
+      } catch (err) {
+        showToast(err.message || `Failed to update status to ${newStatus}`, 'danger');
+      }
+    }
+
+    async function completeEvent() {
+      if (!confirm('Mark this event as COMPLETED? This signifies that the volunteering session concluded.')) {
+        return;
+      }
+      try {
+        await apiFetch(`/api/events/${eventId}/complete`, { method: 'POST' });
+        showToast('Event marked as COMPLETED!', 'success');
+        await loadEvent();
+      } catch (err) {
+        showToast(err.message || 'Failed to complete event', 'danger');
+      }
+    }
+
+    function openCancelModal() {
+      document.getElementById('cancel-event-modal').classList.add('show');
+    }
+
+    function closeCancelModal() {
+      document.getElementById('cancel-event-modal').classList.remove('show');
+    }
+
+    document.getElementById('btn-confirm-cancel-event').addEventListener('click', async () => {
+      const reason = document.getElementById('cancel-reason').value.trim();
+      try {
+        await apiFetch(`/api/events/${eventId}/cancel`, {
+          method: 'POST',
+          body: { reason: reason || 'Event cancelled by organizer.' }
+        });
+        closeCancelModal();
+        showToast('Event cancelled and volunteers notified', 'info');
+        await loadEvent();
+      } catch (err) {
+        showToast(err.message || 'Failed to cancel event', 'danger');
+      }
+    });
+
+    function showError(msg) {
+      const el = document.getElementById('event-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
