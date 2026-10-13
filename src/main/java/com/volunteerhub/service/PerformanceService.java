@@ -66,8 +66,8 @@ public class PerformanceService {
         // Sum approved hours worked
         BigDecimal totalVerifiedHours = attendances.stream()
                 .filter(a -> a.getHoursStatus() == HoursStatus.APPROVED && a.getHoursWorked() != null)
-                .map(Attendance::getHoursWorked)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(a -> a.getHoursWorked())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         // Count attended events (PRESENT)
         int completedEvents = (int) attendances.stream()
@@ -135,7 +135,7 @@ public class PerformanceService {
                     periodKey = eventDate.format(monthFormatter);
                 }
 
-                groupedHours.merge(periodKey, att.getHoursWorked(), BigDecimal::add);
+                groupedHours.merge(periodKey, att.getHoursWorked(), (existingHours, newHours) -> existingHours.add(newHours));
             }
         }
 

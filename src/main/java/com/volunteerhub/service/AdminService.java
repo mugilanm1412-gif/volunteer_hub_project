@@ -294,11 +294,11 @@ public class AdminService {
         String displayName = user.getEmail();
         if (user.getRole() == Role.VOLUNTEER) {
             displayName = volunteerProfileRepository.findByUserId(user.getId())
-                    .map(VolunteerProfile::getFullName)
+                    .map(p -> p.getFullName())
                     .orElse(user.getEmail());
         } else if (user.getRole() == Role.NGO) {
             displayName = ngoProfileRepository.findByUserId(user.getId())
-                    .map(NgoProfile::getName)
+                    .map(p -> p.getName())
                     .orElse(user.getEmail());
         } else if (user.getRole() == Role.ADMIN) {
             displayName = "Administrator";
@@ -320,7 +320,7 @@ public class AdminService {
         if (event.getNgo() != null) {
             ngoId = event.getNgo().getId();
             ngoName = ngoProfileRepository.findByUserId(ngoId)
-                    .map(NgoProfile::getName)
+                    .map(p -> p.getName())
                     .orElse(event.getNgo().getEmail());
         }
 

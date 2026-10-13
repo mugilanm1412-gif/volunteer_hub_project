@@ -78,7 +78,7 @@ public class ApplicationService {
         application = applicationRepository.save(application);
 
         String volunteerName = volunteerProfileRepository.findByUserId(volunteer.getId())
-            .map(VolunteerProfile::getFullName)
+            .map(p -> p.getFullName())
             .orElse(volunteer.getEmail());
 
         // Notify the NGO organizer of the new registration

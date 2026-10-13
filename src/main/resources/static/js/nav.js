@@ -62,13 +62,14 @@ function renderNavbar(container, user) {
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
         </svg>
+        <span class="notification-label-mobile">Notifications</span>
         <span id="nav-notification-badge" class="notification-badge" style="display: none;">0</span>
       </a>
 
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <a href="/profile.html" class="nav-link" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
-          <span style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(user.displayName || user.email)}</span>
-          <span class="badge ${roleBadgeClass}">${user.role}</span>
+      <div class="navbar-user-group">
+        <a href="/profile.html" class="nav-link navbar-user-link" title="View Profile">
+          <span id="nav-user-name" class="navbar-user-name"></span>
+          <span id="nav-user-role" class="badge ${roleBadgeClass}"></span>
         </a>
         <button id="btn-logout" class="btn btn-secondary btn-sm" title="Log Out">
           Log Out
@@ -117,11 +118,24 @@ function renderNavbar(container, user) {
     </div>
   `;
 
+  // Safely populate user information using textContent to prevent XSS
+  if (user) {
+    const userNameEl = container.querySelector('#nav-user-name');
+    if (userNameEl) {
+      userNameEl.textContent = user.displayName || user.email || 'User';
+    }
+    const userRoleEl = container.querySelector('#nav-user-role');
+    if (userRoleEl) {
+      userRoleEl.textContent = user.role || '';
+    }
+  }
+
   // Mobile menu toggle logic
-  const toggleBtn = document.getElementById('navbar-toggle-btn');
-  const collapseMenu = document.getElementById('navbar-collapse-menu');
+  const toggleBtn = container.querySelector('#navbar-toggle-btn');
+  const collapseMenu = container.querySelector('#navbar-collapse-menu');
   if (toggleBtn && collapseMenu) {
-    toggleBtn.addEventListener('click', () => {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const isOpen = collapseMenu.classList.toggle('is-open');
       toggleBtn.classList.toggle('is-active', isOpen);
       toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -147,20 +161,36 @@ function renderNavbar(container, user) {
         }
       });
     });
+
+    // Close when clicking outside navbar
+    document.addEventListener('click', (e) => {
+      if (collapseMenu.classList.contains('is-open') && !container.contains(e.target)) {
+        collapseMenu.classList.remove('is-open');
+        toggleBtn.classList.remove('is-active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   // Attach logout handler if logged in
-  const logoutBtn = document.getElementById('btn-logout');
+  const logoutBtn = container.querySelector('#btn-logout');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
       try {
         await apiFetch('/api/auth/logout', { method: 'POST' });
-        showToast('Logged out successfully', 'success');
+        if (typeof showToast === 'function') {
+          showToast('Logged out successfully', 'success');
+        }
         setTimeout(() => {
           window.location.href = '/login.html';
         }, 300);
       } catch (err) {
-        showToast('Logout encountered an error', 'danger');
+        if (typeof showToast === 'function') {
+          showToast('Logout encountered an error', 'danger');
+        } else {
+          window.location.href = '/login.html';
+        }
       }
     });
   }

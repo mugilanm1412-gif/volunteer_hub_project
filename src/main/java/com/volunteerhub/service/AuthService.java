@@ -175,7 +175,7 @@ public class AuthService {
 
         if (user.getRole() == Role.VOLUNTEER) {
             displayName = volunteerProfileRepository.findByUserId(user.getId())
-                .map(VolunteerProfile::getFullName)
+                .map(p -> p.getFullName())
                 .orElse(user.getEmail());
         } else if (user.getRole() == Role.NGO) {
             NgoProfile ngo = ngoProfileRepository.findByUserId(user.getId()).orElse(null);

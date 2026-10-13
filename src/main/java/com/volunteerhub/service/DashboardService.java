@@ -80,7 +80,7 @@ public class DashboardService {
             Event ev = app.getEvent();
             String ngoName = (ev.getNgo() != null)
                     ? ngoProfileRepository.findByUserId(ev.getNgo().getId())
-                    .map(NgoProfile::getName)
+                    .map(p -> p.getName())
                     .orElse(ev.getNgo().getEmail())
                     : "Community Organization";
 

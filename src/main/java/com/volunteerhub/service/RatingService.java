@@ -86,7 +86,7 @@ public class RatingService {
         // 5. Notify the volunteer
         User volunteer = attendance.getApplication().getVolunteer();
         String ngoName = ngoProfileRepository.findByUserId(ngoUser.getId())
-                .map(NgoProfile::getName)
+                .map(p -> p.getName())
                 .orElse("Event Organizer");
 
         double avgScore = roundToTwoDecimals(saved.getAverageScore());
@@ -116,7 +116,7 @@ public class RatingService {
         return ratings.stream().map(r -> {
             Event event = r.getAttendance().getApplication().getEvent();
             String ngoName = ngoProfileRepository.findByUserId(event.getNgo().getId())
-                    .map(NgoProfile::getName)
+                    .map(p -> p.getName())
                     .orElse("Event Organizer");
             return toDto(r, ngoName, event);
         }).collect(Collectors.toList());

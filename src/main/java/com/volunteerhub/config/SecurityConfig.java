@@ -66,7 +66,7 @@ public class SecurityConfig {
 
         if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
             config.setAllowedOrigins(java.util.Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim).filter(s -> !s.isEmpty()).toList());
+                .map(s -> s.trim()).filter(s -> !s.isEmpty()).toList());
             config.setAllowCredentials(true);
             config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin"));
             config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

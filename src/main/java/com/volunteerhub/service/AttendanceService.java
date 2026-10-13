@@ -22,14 +22,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service managing physical event attendance marking, hours recording, and volunteer schedule history.
+ * Service managing physical event attendance marking, hours recording, and
+ * volunteer schedule history.
  */
 @Service
 @Transactional
 public class AttendanceService {
 
     /**
-     * Documented tolerance (in hours) permitted beyond the scheduled event duration.
+     * Documented tolerance (in hours) permitted beyond the scheduled event
+     * duration.
      * Accounts for wrap-up, community debriefs, and minor overtime.
      */
     public static final BigDecimal ATTENDANCE_HOURS_TOLERANCE = BigDecimal.valueOf(1.0);
@@ -45,14 +47,14 @@ public class AttendanceService {
     private final CertificateService certificateService;
 
     public AttendanceService(AttendanceRepository attendanceRepository,
-                             EventRepository eventRepository,
-                             ApplicationRepository applicationRepository,
-                             UserRepository userRepository,
-                             com.volunteerhub.repository.NgoProfileRepository ngoProfileRepository,
-                             com.volunteerhub.repository.VolunteerRatingRepository volunteerRatingRepository,
-                             AuditLogService auditLogService,
-                             NotificationService notificationService,
-                             CertificateService certificateService) {
+            EventRepository eventRepository,
+            ApplicationRepository applicationRepository,
+            UserRepository userRepository,
+            com.volunteerhub.repository.NgoProfileRepository ngoProfileRepository,
+            com.volunteerhub.repository.VolunteerRatingRepository volunteerRatingRepository,
+            AuditLogService auditLogService,
+            NotificationService notificationService,
+            CertificateService certificateService) {
         this.attendanceRepository = attendanceRepository;
         this.eventRepository = eventRepository;
         this.applicationRepository = applicationRepository;
@@ -65,12 +67,13 @@ public class AttendanceService {
     }
 
     /**
-     * Records batch attendance and service hours for approved volunteer registrations.
+     * Records batch attendance and service hours for approved volunteer
+     * registrations.
      * Enforces ownership, event conclusion, capacity limits, and duration caps.
      *
-     * @param eventId the event ID
+     * @param eventId  the event ID
      * @param ngoEmail the authenticated NGO account email
-     * @param request batch attendance submission payload
+     * @param request  batch attendance submission payload
      * @return list of created attendance records
      */
     public List<AttendanceResponseDto> markAttendance(Long eventId, String ngoEmail, BatchAttendanceRequest request) {
@@ -89,10 +92,12 @@ public class AttendanceService {
         boolean isPastDate = event.getEventDate() != null && event.getEventDate().isBefore(LocalDate.now());
         boolean isCompleted = event.getStatus() == EventStatus.COMPLETED;
         if (!isPastDate && !isCompleted) {
-            throw new BadRequestException("Attendance can only be marked after the event date has passed or the event is marked as COMPLETED");
+            throw new BadRequestException(
+                    "Attendance can only be marked after the event date has passed or the event is marked as COMPLETED");
         }
 
-        // 3. Compute maximum allowed hours (Scheduled Duration + ATTENDANCE_HOURS_TOLERANCE)
+        // 3. Compute maximum allowed hours (Scheduled Duration +
+        // ATTENDANCE_HOURS_TOLERANCE)
         BigDecimal scheduledHours = BigDecimal.valueOf(4.0); // Default fallback
         if (event.getStartTime() != null && event.getEndTime() != null) {
             long minutes = Math.max(0, Duration.between(event.getStartTime(), event.getEndTime()).toMinutes());
@@ -104,7 +109,8 @@ public class AttendanceService {
         Set<Long> batchApplicationIds = new HashSet<>();
         for (AttendanceRecordRequest rec : request.getRecords()) {
             if (!batchApplicationIds.add(rec.getApplicationId())) {
-                throw new ConflictException("Duplicate application ID #" + rec.getApplicationId() + " in batch request");
+                throw new ConflictException(
+                        "Duplicate application ID #" + rec.getApplicationId() + " in batch request");
             }
         }
 
@@ -112,22 +118,26 @@ public class AttendanceService {
 
         for (AttendanceRecordRequest rec : request.getRecords()) {
             Application application = applicationRepository.findById(rec.getApplicationId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + rec.getApplicationId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Application not found with id: " + rec.getApplicationId()));
 
             // Verify application belongs to this event
             if (!application.getEvent().getId().equals(event.getId())) {
-                throw new BadRequestException("Application #" + application.getId() + " does not belong to event #" + event.getId());
+                throw new BadRequestException(
+                        "Application #" + application.getId() + " does not belong to event #" + event.getId());
             }
 
             // Verify application is APPROVED
             if (application.getStatus() != ApplicationStatus.APPROVED) {
-                throw new BadRequestException("Attendance can only be marked for APPROVED registrations. Application #" +
-                        application.getId() + " has status " + application.getStatus());
+                throw new BadRequestException(
+                        "Attendance can only be marked for APPROVED registrations. Application #" +
+                                application.getId() + " has status " + application.getStatus());
             }
 
             // Verify no duplicate attendance record already exists in database
             if (attendanceRepository.existsByApplicationId(application.getId())) {
-                throw new ConflictException("Attendance has already been marked for application #" + application.getId());
+                throw new ConflictException(
+                        "Attendance has already been marked for application #" + application.getId());
             }
 
             // Validate hours according to attendance status
@@ -140,7 +150,8 @@ public class AttendanceService {
                     throw new BadRequestException("Present volunteers must have hours worked greater than 0");
                 }
                 if (submittedHours.compareTo(maxAllowedHours) > 0) {
-                    throw new BadRequestException("Hours worked (" + submittedHours + ") exceeds maximum scheduled duration plus tolerance (" +
+                    throw new BadRequestException("Hours worked (" + submittedHours
+                            + ") exceeds maximum scheduled duration plus tolerance (" +
                             maxAllowedHours + " hours)");
                 }
                 hoursToRecord = submittedHours.setScale(2, RoundingMode.HALF_UP);
@@ -180,8 +191,10 @@ public class AttendanceService {
     }
 
     /**
-     * Retrieves attendance history and verified hours for the authenticated volunteer.
-     * Uses eager fetch joins to eliminate N+1 queries across application, event, and NGO profile.
+     * Retrieves attendance history and verified hours for the authenticated
+     * volunteer.
+     * Uses eager fetch joins to eliminate N+1 queries across application, event,
+     * and NGO profile.
      */
     @Transactional(readOnly = true)
     public List<VolunteerAttendanceDto> getVolunteerAttendance(String volunteerEmail) {
@@ -198,9 +211,10 @@ public class AttendanceService {
      * Reviews (approves or rejects) logged volunteer service hours.
      * Enforces that approved records are strictly immutable.
      *
-     * @param attendanceId the attendance record ID
+     * @param attendanceId  the attendance record ID
      * @param reviewerEmail the authenticated NGO or Admin email
-     * @param request review payload containing status and optional/mandatory reason
+     * @param request       review payload containing status and optional/mandatory
+     *                      reason
      * @return updated attendance record representation
      */
     public AttendanceResponseDto reviewHours(Long attendanceId, String reviewerEmail, HoursReviewRequest request) {
@@ -208,11 +222,13 @@ public class AttendanceService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + reviewerEmail));
 
         Attendance attendance = attendanceRepository.findById(attendanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Attendance record not found with id: " + attendanceId));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Attendance record not found with id: " + attendanceId));
 
         Event event = attendance.getApplication().getEvent();
 
-        // 1. Authorization: ADMIN can review any record; NGO can only review records from its own events
+        // 1. Authorization: ADMIN can review any record; NGO can only review records
+        // from its own events
         boolean isAdmin = reviewer.getRole() == Role.ADMIN;
         boolean isOwnerNgo = (reviewer.getRole() == Role.NGO) &&
                 (event.getNgo() != null && event.getNgo().getId().equals(reviewer.getId()));
@@ -251,14 +267,16 @@ public class AttendanceService {
         String action = (request.getStatus() == HoursStatus.APPROVED) ? "APPROVE_HOURS" : "REJECT_HOURS";
         User volunteer = attendance.getApplication().getVolunteer();
         String details = (request.getStatus() == HoursStatus.APPROVED)
-                ? String.format("Approved %.2f volunteer hours for %s on event '%s'.", attendance.getHoursWorked(), volunteer.getEmail(), event.getTitle())
-                : String.format("Rejected volunteer hours for %s on event '%s'. Reason: %s", volunteer.getEmail(), event.getTitle(), request.getReason().trim());
+                ? String.format("Approved %.2f volunteer hours for %s on event '%s'.", attendance.getHoursWorked(),
+                        volunteer.getEmail(), event.getTitle())
+                : String.format("Rejected volunteer hours for %s on event '%s'. Reason: %s", volunteer.getEmail(),
+                        event.getTitle(), request.getReason().trim());
 
         auditLogService.logAction(reviewer, action, "ATTENDANCE", saved.getId(), details);
 
         // 6. In-App Notification to Volunteer
         String ngoName = ngoProfileRepository.findByUserId(event.getNgo().getId())
-                .map(NgoProfile::getName)
+                .map(p -> p.getName())
                 .orElse("Organizer");
 
         if (request.getStatus() == HoursStatus.APPROVED) {
@@ -266,22 +284,23 @@ public class AttendanceService {
                     volunteer,
                     "HOURS_APPROVED",
                     "Volunteer Hours Approved",
-                    String.format("%s approved %.2f hours for %s.", ngoName, attendance.getHoursWorked(), event.getTitle()),
+                    String.format("%s approved %.2f hours for %s.", ngoName, attendance.getHoursWorked(),
+                            event.getTitle()),
                     "ATTENDANCE",
-                    saved.getId()
-            );
+                    saved.getId());
 
-            // Phase 6 Auto-issuance Hook: trigger automated certificate generation in the same transaction
+            // Phase 6 Auto-issuance Hook: trigger automated certificate generation in the
+            // same transaction
             onHoursApproved(saved, reviewer);
         } else {
             notificationService.createNotification(
                     volunteer,
                     "HOURS_REJECTED",
                     "Volunteer Hours Rejected",
-                    String.format("%s did not approve hours for %s. Reason: %s", ngoName, event.getTitle(), request.getReason().trim()),
+                    String.format("%s did not approve hours for %s. Reason: %s", ngoName, event.getTitle(),
+                            request.getReason().trim()),
                     "ATTENDANCE",
-                    saved.getId()
-            );
+                    saved.getId());
         }
 
         return mapToAttendanceResponseDto(saved);
@@ -289,11 +308,12 @@ public class AttendanceService {
 
     /**
      * Extension point for automatic certificate issuance upon hours approval.
-     * When hours are APPROVED for a PRESENT volunteer, auto-issues a verifiable certificate.
+     * When hours are APPROVED for a PRESENT volunteer, auto-issues a verifiable
+     * certificate.
      */
     protected void onHoursApproved(Attendance attendance, User reviewer) {
         if (attendance.getAttendanceStatus() == AttendanceStatus.PRESENT &&
-            attendance.getHoursStatus() == HoursStatus.APPROVED) {
+                attendance.getHoursStatus() == HoursStatus.APPROVED) {
             certificateService.issueCertificateForAttendance(attendance, reviewer);
         }
     }
@@ -314,8 +334,7 @@ public class AttendanceService {
                 a.getHoursWorked(),
                 a.getHoursStatus(),
                 a.getCreatedAt(),
-                a.getRejectReason()
-        );
+                a.getRejectReason());
 
         volunteerRatingRepository.findByAttendanceId(a.getId()).ifPresent(r -> {
             dto.setRating(new VolunteerRatingDto(
@@ -329,8 +348,7 @@ public class AttendanceService {
                     r.getEffort(),
                     r.getAverageScore(),
                     r.getComment(),
-                    r.getCreatedAt()
-            ));
+                    r.getCreatedAt()));
         });
 
         return dto;
@@ -340,7 +358,7 @@ public class AttendanceService {
         Application app = a.getApplication();
         Event ev = app.getEvent();
         String ngoName = ngoProfileRepository.findByUserId(ev.getNgo().getId())
-                .map(NgoProfile::getName)
+                .map(p -> p.getName())
                 .orElse("NGO Organization");
 
         return new VolunteerAttendanceDto(
@@ -354,7 +372,6 @@ public class AttendanceService {
                 a.getHoursWorked(),
                 a.getHoursStatus(),
                 a.getReviewedAt(),
-                a.getRejectReason()
-        );
+                a.getRejectReason());
     }
 }

@@ -186,11 +186,11 @@ public class CertificateService {
         User ngoUser = event.getNgo();
 
         String volunteerName = volunteerProfileRepository.findByUserId(volunteer.getId())
-                .map(VolunteerProfile::getFullName)
+                .map(p -> p.getFullName())
                 .orElse(volunteer.getEmail());
 
         String ngoName = (ngoUser != null)
-                ? ngoProfileRepository.findByUserId(ngoUser.getId()).map(NgoProfile::getName).orElse(ngoUser.getEmail())
+                ? ngoProfileRepository.findByUserId(ngoUser.getId()).map(p -> p.getName()).orElse(ngoUser.getEmail())
                 : "Host Organization";
 
         LocalDate eventDate = event.getEventDate();
@@ -231,11 +231,11 @@ public class CertificateService {
         User ngo = ev.getNgo();
 
         String volName = volunteerProfileRepository.findByUserId(vol.getId())
-                .map(VolunteerProfile::getFullName)
+                .map(p -> p.getFullName())
                 .orElse(vol.getEmail());
 
         String ngoName = (ngo != null)
-                ? ngoProfileRepository.findByUserId(ngo.getId()).map(NgoProfile::getName).orElse(ngo.getEmail())
+                ? ngoProfileRepository.findByUserId(ngo.getId()).map(p -> p.getName()).orElse(ngo.getEmail())
                 : "Host Organization";
 
         return new CertificateDto(

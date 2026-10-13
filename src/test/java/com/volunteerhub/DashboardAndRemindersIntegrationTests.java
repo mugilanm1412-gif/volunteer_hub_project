@@ -1,6 +1,5 @@
 package com.volunteerhub;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.volunteerhub.entity.*;
 import com.volunteerhub.repository.*;
 import com.volunteerhub.service.EventReminderService;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -31,9 +29,6 @@ public class DashboardAndRemindersIntegrationTests {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private UserRepository userRepository;
